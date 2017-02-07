@@ -544,6 +544,110 @@ void serial::writeX(int z,char *p)
   return;
 }
 
+
+//==========================================
+// Esplora
+//==========================================
+int esplora::readSlider() {
+  cout << "called Esplora.readSlider()" << endl;
+}
+
+int esplora::readLightSensor() {
+  cout << "called Esplora.readLightSensor()" << endl;
+
+}
+
+int esplora::readTemperature(byte scale) {
+  cout << "called Esplora.readTemperature()" << endl;
+
+}
+
+int esplora::readMicrophone() {
+  cout << "called Esplora.readMicrophone()" << endl;
+
+}
+
+int esplora::readJoystickSwitch() {
+  cout << "called Esplora.readJoystickSwitch()" << endl;
+
+}
+
+int esplora::readJoystickButton() {
+  cout << "called Esplora.readJoystickButton()" << endl;
+
+}
+
+int esplora::readAccelerometer(byte axis) {
+  cout << "called Esplora.readAccelerometer()" << endl;
+
+}
+
+int esplora::readButton(byte button) {
+  cout << "called Esplora.readButton()" << endl;
+
+}
+
+int esplora::readJoystickX() {
+  cout << "called Esplora.readJoystickX()" << endl;
+
+}
+
+int esplora::readJoystickY() {
+  cout << "called Esplora.readJoystickY()" << endl;
+
+}
+
+void esplora::writeRGB(byte red, byte green, byte blue) {
+  cout << "called Esplora.writeRGB()" << endl;
+
+}
+
+void esplora::writeRed(byte red) {
+  cout << "called Esplora.writeRed()" << endl;
+
+}
+
+void esplora::writeGreen(byte green) {
+  cout << "called Esplora.writeGreen()" << endl;
+
+}
+
+void esplora::writeBlue(byte blue) {
+  cout << "called Esplora.readTemperature()" << endl;
+
+}
+
+byte esplora::readRed() {
+  cout << "called Esplora.readTemperature()" << endl;
+
+}
+
+byte esplora::readGreen() {
+  cout << "called Esplora.readTemperature()" << endl;
+
+}
+
+byte esplora::readBlue() {
+  cout << "called Esplora.readTemperature()" << endl;
+
+}
+
+void esplora::tone() {
+  cout << "called Esplora.readTemperature()" << endl;
+
+}
+
+void esplora::noTone(unsigned int freq) {
+  cout << "called Esplora.readTemperature()" << endl;
+
+}
+
+void esplora::noTone(unsigned int freq, unsigned long duration) {
+  cout << "called Esplora.readTemperature()" << endl;
+
+}
+
+
 //==========================================
 // String
 //==========================================

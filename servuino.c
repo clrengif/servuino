@@ -12,16 +12,17 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <cstring>
 #include <string>
-#include <math.h> 
+#include <math.h>
 using namespace std;
 #include "common.h"
+
 
 //===================================
 // Simulator status
@@ -47,7 +48,7 @@ char g_custText[120][120][100];
 //===================================
 
 
-char  sketch[120],g_temp[120];
+char  sketch[120], g_temp[120];
 int   g_simulationLength = 111;
 char  g_version[40];
 
@@ -55,8 +56,8 @@ char  g_version[40];
 
 void  stepCommand();
 
-int   row,col;
-int   graph_x = 10,graph_y = 10;
+int   row, col;
+int   graph_x = 10, graph_y = 10;
 
 char  appName[120];
 
@@ -126,9 +127,10 @@ int g_row_loop = 0;
 int nCodeString = 0;
 
 
-FILE *s_log,*e_log,*c_log,*a_log,*u_log,*x_log,*t_log,*r_log;
-FILE *f_event,*f_cust,*f_serial,*f_time,*f_ino;
-FILE *f_pinmod,*f_digval,*f_anaval,*f_pinrw;
+FILE *s_log, *e_log, *c_log, *a_log, *u_log, *x_log, *t_log, *r_log;
+FILE *f_event, *f_cust, *f_serial, *f_time, *f_ino;
+FILE *f_pinmod, *f_digval, *f_anaval, *f_pinrw;
+
 
 #include "arduino.h"
 #include "code.h"
@@ -137,6 +139,7 @@ FILE *f_pinmod,*f_digval,*f_anaval,*f_pinrw;
 #include "servuino_lib.c"
 #include "arduino_lib.c"
 #include "sketch.ino"
+
 void setup();
 void loop();
 
@@ -146,89 +149,87 @@ void runEncoding(int n)
 {
   int i;
 
-  saveScenarioExpanded();
+  //saveScenarioExpanded();
 
   g_curStep = 0;
-  ino(g_row_setup);
-  servuinoFunc(S_SETUP,0,0,NULL,0);
+  //ino(g_row_setup);
+  servuinoFunc(S_SETUP, 0, 0, NULL, 0);
   setup();
 
-  for(i=0;i<MAX_LOOPS;i++)  
-    {
-      g_curLoop++;
-      ino(g_row_loop);
-      servuinoFunc(S_LOOP,g_curLoop,0,NULL,0);
-      loop();  
-    }
+  for (i = 0; i < MAX_LOOPS; i++)
+  {
+    g_curLoop++;
+    //ino(g_row_loop);
+    servuinoFunc(S_LOOP, g_curLoop, 0, NULL, 0);
+    loop();
+  }
   stopEncoding();
   return;
 }
 
 
-//====================================
+//=======================R=============
 int main(int argc, char *argv[])
 //====================================
 {
-  int x,i;
+  int x, i;
 
-  strcpy(g_version,"0.1.2");
+  strcpy(g_version, "0.1.2");
 
-  openFiles();
-  readSketchInfo();
+  //openFiles();
+  //readSketchInfo();
   g_nTotPins = setRange(g_boardType);
-  if(g_boardType == UNO)g_nDigPins = MAX_PIN_DIGITAL_UNO;
-  if(g_boardType == MEGA)g_nDigPins = MAX_PIN_DIGITAL_MEGA;
- 
-  boardInit();
-  readScenario();
-  readCustom(); // Get customized log text from sketch
+  if (g_boardType == UNO)g_nDigPins = MAX_PIN_DIGITAL_UNO;
+  if (g_boardType == MEGA)g_nDigPins = MAX_PIN_DIGITAL_MEGA;
 
-  if(argc == 1)
+  //boardInit();
+  //readScenario();
+  //readCustom(); // Get customized log text from sketch
+
+  if (argc == 1)
+  {
+    g_simulationLength = 901;
+    g_scenSource = 0;
+    runEncoding(g_simulationLength);
+  }
+  if (argc == 3)
+  {
+    g_simulationLength = atoi(argv[1]);
+    g_scenSource = atoi(argv[2]);
+    readScenario(); // Maybe other source
+    runEncoding(g_simulationLength);
+
+  }
+  else if (argc == 8)
+  {
+    // steps, source, pintype, pinno, pinvalue, pinstep,action
+    g_simulationLength = atoi(argv[1]);
+    g_scenSource       =  atoi(argv[2]);
+    g_pinType          =  atoi(argv[3]);
+    g_pinNo            =  atoi(argv[4]);
+    g_pinValue         =  atoi(argv[5]);
+    g_pinStep          =  atoi(argv[6]);
+    g_action           =  atoi(argv[7]);
+
+    readScenario();// read from data.scen
+
+    max_steps = g_simulationLength;
+
+    if (g_pinType == DIG)
     {
-      g_simulationLength = 901;
-      g_scenSource = 0;
-      runEncoding(g_simulationLength);
+      if (g_action == S_ADD)   x = insDigitalPinValue(g_pinNo, g_pinStep, g_pinValue);
+      if (g_action == S_DELETE)x = delDigitalPinValue(g_pinNo, g_pinStep);
     }
-  if(argc == 3)
+    if (g_pinType == ANA)
     {
-      g_simulationLength = atoi(argv[1]);
-      g_scenSource = atoi(argv[2]);
-      readScenario(); // Maybe other source
-      runEncoding(g_simulationLength);
-
+      if (g_action == S_ADD)   x = insAnalogPinValue(g_pinNo, g_pinStep, g_pinValue);
+      if (g_action == S_DELETE)x = delAnalogPinValue(g_pinNo, g_pinStep);
     }
-  else if(argc == 8)
-    {
-      // steps, source, pintype, pinno, pinvalue, pinstep,action
-      g_simulationLength = atoi(argv[1]);
-      g_scenSource       =  atoi(argv[2]);
-      g_pinType          =  atoi(argv[3]);
-      g_pinNo            =  atoi(argv[4]);
-      g_pinValue         =  atoi(argv[5]);
-      g_pinStep          =  atoi(argv[6]);
-      g_action           =  atoi(argv[7]);
-
-      readScenario();// read from data.scen
-
-      max_steps = g_simulationLength;
-
-      if(g_pinType == DIG)
-	{ 
-	  if(g_action == S_ADD)   x = insDigitalPinValue(g_pinNo,g_pinStep,g_pinValue);
-	  if(g_action == S_DELETE)x = delDigitalPinValue(g_pinNo,g_pinStep);
-	}
-      if(g_pinType == ANA)
-	{ 
-	  if(g_action == S_ADD)   x = insAnalogPinValue(g_pinNo,g_pinStep,g_pinValue);
-	  if(g_action == S_DELETE)x = delAnalogPinValue(g_pinNo,g_pinStep);
-	}
-      runEncoding(g_simulationLength);
-    }
+    runEncoding(g_simulationLength);
+  }
   else
-    errorLog("Servuino not executed",0);
+    errorLog("Servuino not executed", 0);
 
-  closeFiles();
+  //closeFiles();
 }
- 
 
- 

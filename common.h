@@ -18,8 +18,9 @@
 
 // Board ====================
 
-#define UNO    1
-#define MEGA   2
+#define UNO     1
+#define MEGA    2
+#define ESPLORA 3
 
 #define ANA    1
 #define DIG    2

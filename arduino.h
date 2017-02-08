@@ -35,13 +35,14 @@ using std::stringstream;
 #define FALLING 13
 
 // Math function min and max
-#ifndef max
-#define max( a, b ) ( ((a) > (b)) ? (a) : (b) )
-#endif
+// CONFLICTS WITH regex library.
+// #ifndef max
+// #define max( a, b ) ( ((a) > (b)) ? (a) : (b) )
+// #endif
 
-#ifndef min
-#define min( a, b ) ( ((a) < (b)) ? (a) : (b) )
-#endif
+// #ifndef min
+// #define min( a, b ) ( ((a) < (b)) ? (a) : (b) )
+// #endif
 
 #define _BV(bit) (1 << (bit))
 
@@ -496,7 +497,7 @@ private:
   byte lastRed;
   byte lastGreen;
   byte lastBlue;
-  
+
 public:
   int readSlider();
   int readLightSensor();
@@ -515,8 +516,8 @@ public:
   byte readRed();
   byte readGreen();
   byte readBlue();
-  void tone();
-  void noTone(unsigned int freq);
-  void noTone(unsigned int freq, unsigned long duration);
+  void noTone();
+  void tone(unsigned int freq);
+  void tone(unsigned int freq, unsigned long duration);
 };
 esplora Esplora;

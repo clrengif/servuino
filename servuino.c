@@ -126,6 +126,7 @@ int g_row_loop = 0;
 
 
 int nCodeString = 0;
+int default_sim_length = 50;
 
 
 FILE *s_log, *e_log, *c_log, *a_log, *u_log, *x_log, *t_log, *r_log;
@@ -140,7 +141,7 @@ FILE *f_pinmod, *f_digval, *f_anaval, *f_pinrw;
 #include "servuino_lib.c"
 #include "arduino_lib.c"
 
-//#include <regex>
+#include <regex>
 
 ifstream infile("sketch/sketch.ino");
 #include "sketch/sketch.ino"
@@ -148,20 +149,20 @@ ifstream infile("sketch/sketch.ino");
 void setup();
 void loop();
 
-// void findLibs() {
-//   string str;
-//   bool found = false;
+void findLibs() {
+  string str;
+  bool found = false;
 
-//   while(getline(infile, str)) {
-//     if (regex_match(str, regex("^\\s*#\\s*include\\s+[<\"][^>\"]Esplora[>\"]\\s*"))){
-//       found = true;
-//     }
-//   }
-//   if (found) 
-//     cout << "Esplora library found" << endl;
-//   else 
-//     cout << "Esplora not found" << endl;
-// }
+  while(getline(infile, str)) {
+    if (regex_match(str, regex("^\\s*#\\s*include\\s+[<\"][^>\"]*[>\"]\\s*"))){
+      found = true;
+    }
+  }
+  if (found) 
+    cout << "Esplora library found" << endl;
+  else 
+    cout << "Esplora not found" << endl;
+}
 
 //====================================
 void runEncoding(int n)
@@ -170,6 +171,7 @@ void runEncoding(int n)
   int i;
 
   //saveScenarioExpanded();
+  findLibs();
 
   g_curStep = 0;
   //ino(g_row_setup);
@@ -208,7 +210,7 @@ int main(int argc, char *argv[])
 
   if (argc == 1)
   {
-    g_simulationLength = 901;
+    g_simulationLength = default_sim_length;
     g_scenSource = 0;
     runEncoding(g_simulationLength);
   }

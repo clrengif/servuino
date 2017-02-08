@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <cstring>
 #include <string>
+#include <fstream>
 #include <math.h>
 using namespace std;
 #include "common.h"
@@ -138,10 +139,29 @@ FILE *f_pinmod, *f_digval, *f_anaval, *f_pinrw;
 #include "servuino.h"
 #include "servuino_lib.c"
 #include "arduino_lib.c"
-#include "sketch.ino"
+
+//#include <regex>
+
+ifstream infile("sketch/sketch.ino");
+#include "sketch/sketch.ino"
 
 void setup();
 void loop();
+
+// void findLibs() {
+//   string str;
+//   bool found = false;
+
+//   while(getline(infile, str)) {
+//     if (regex_match(str, regex("^\\s*#\\s*include\\s+[<\"][^>\"]Esplora[>\"]\\s*"))){
+//       found = true;
+//     }
+//   }
+//   if (found) 
+//     cout << "Esplora library found" << endl;
+//   else 
+//     cout << "Esplora not found" << endl;
+// }
 
 //====================================
 void runEncoding(int n)

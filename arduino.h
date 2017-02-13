@@ -471,53 +471,6 @@ class serial {
   void println(unsigned char c);
   void write(char *p);
 
-  // Wrappers
-  void beginX(int z,int baudRate);
-  void endX(int z);
-  int  availableX(int z);
-  char readX(int z);
-  int  peekX(int z);
-  void flushX(int z);
-  void printX(int z,int x);
-  void printX(int z,int x,int base);
-  void printX(int z,const char *p);
-  void printX(int z,unsigned char c);
-  void printlnX(int z,int x);
-  void printlnX(int z,const char *p);
-  void printlnX(int z,string p);
-  void printlnX(int z,String p);
-  void printlnX(int z);
-  void printlnX(int z,unsigned char c);
-  void writeX(int z,char *p);
 };
 serial Serial,Serial1,Serial2,Serial3;
 
-class esplora {
-private:
-  byte lastRed;
-  byte lastGreen;
-  byte lastBlue;
-
-public:
-  int readSlider();
-  int readLightSensor();
-  int readTemperature(byte scale);
-  int readMicrophone();
-  int readJoystickSwitch();
-  int readJoystickButton();
-  int readAccelerometer(byte axis);
-  int readButton(byte button);
-  int readJoystickX();
-  int readJoystickY();
-  void writeRGB(byte red, byte green, byte blue);
-  void writeRed(byte red);
-  void writeGreen(byte green);
-  void writeBlue(byte blue);
-  byte readRed();
-  byte readGreen();
-  byte readBlue();
-  void noTone();
-  void tone(unsigned int freq);
-  void tone(unsigned int freq, unsigned long duration);
-};
-esplora Esplora;

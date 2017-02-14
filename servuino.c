@@ -149,21 +149,6 @@ ifstream infile("sketch/sketch.ino");
 void setup();
 void loop();
 
-void findLibs() {
-  string str;
-  bool found = false;
-
-  while(getline(infile, str)) {
-    if (regex_match(str, regex("^\\s*#\\s*include\\s+[<\"][^>\"]*[>\"]\\s*"))){
-      found = true;
-    }
-  }
-  if (found) 
-    cout << "Esplora library found" << endl;
-  else 
-    cout << "Esplora not found" << endl;
-}
-
 //====================================
 void runEncoding(int n)
 //====================================
@@ -171,7 +156,6 @@ void runEncoding(int n)
   int i;
 
   //saveScenarioExpanded();
-  findLibs();
 
   g_curStep = 0;
   //ino(g_row_setup);

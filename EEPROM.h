@@ -5,9 +5,6 @@ class eeprom {
   int read(int address);
   void write(int address, int value);
   
-  // Wrappers for debug functionality
-  int readX(int z,int address);
-  void writeX(int z,int address, int value);
 };
 eeprom EEPROM;
 
@@ -28,16 +25,5 @@ void eeprom::write(int address, int value)
   return;
 }
 
-int eeprom::readX(int z,int address) 
-{
-  ino(z);
-  return(read(address));
-}
-void eeprom::writeX(int z,int address, int value) 
-{
-  ino(z);
-  write(address,value);
-  return;
-}
 
 

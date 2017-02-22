@@ -873,8 +873,6 @@ void errorLog(const char msg[], int x)
 {
   printf("ServuinoERROR: %s %d\n",msg,x);
   //fprintf(e_log, "ServuinoERROR[step %d]: %s %d\n", g_curStep, msg, x);
-
-  return;
 }
 
 //====================================
@@ -1392,46 +1390,6 @@ int wCustomLog(char *in, char *out)
 }
 
 
-//====================================
-void readSketchInfo()
-//====================================
-{
-  FILE *in;
-  char row[120], res[40], *p, *q, value[5];
-  int pin, rows = 0;
-
-  in = fopen("sketch.ino", "r");
-  if (in == NULL)
-  {
-    errorLog("Error: Unable to open sketch", g_curStep);
-  }
-  else
-  {
-    while (fgets(row, 120, in) != NULL)
-    {
-      rows++;
-      //if(row[0] == '/')
-      //  {
-      if (p = strstr(row, "setup("))g_row_setup = rows;
-      if (p = strstr(row, "loop("))g_row_loop = rows;
-      if (p = strstr(row, "SKETCH_NAME:"))
-      {
-        fprintf(f_event, "#%s", row);
-        q = strstr(p, ":"); q++;
-        sscanf(q, "%s", appName);
-      }
-      if (p = strstr(row, "BOARD_TYPE"))
-      {
-        fprintf(f_event, "#%s", row);
-        if (strstr(row, "UNO") != NULL) g_boardType = UNO;
-        if (strstr(row, "MEGA") != NULL) g_boardType = MEGA;
-      }
-      //  }
-    }
-  }
-  fclose(in);
-}
-
 
 //====================================
 void stopEncoding()
@@ -1506,145 +1464,6 @@ void interruptNow()
         doInterrupt(pin, ir, LOW, ir_1);
       }
     }
-
-  }
-
-}
-//====================================
-void readScenario()
-//====================================
-{
-  FILE *in;
-  char row[120], *p, junk[20];
-  int pin, step, value, i, j;
-  int tmp = 0, dCount[MAX_PIN_DIGITAL_MEGA], aCount[MAX_PIN_ANALOG_MEGA];
-
-  if (g_scenSource == 0)in = fopen("sketch.ino", "r");
-  if (g_scenSource == 1)in = fopen("data.scen", "r");
-
-  for (i = 0; i <= max_anaPin; i++)
-  {
-    for (j = 0; j < SCEN_MAX; j++)
-    {
-      s_analogPin[j][i]  = 0;
-      s_analogStep[j][i] = 0;
-    }
-  }
-
-  for (i = 0; i <= max_digPin; i++)
-  {
-    for (j = 0; j < SCEN_MAX; j++)
-    {
-      s_digitalPin[j][i]  = 0;
-      s_digitalStep[j][i] = 0;
-    }
-  }
-
-  for (i = 0; i <= max_digPin; i++)dCount[i] = 0;
-  for (i = 0; i <= max_anaPin; i++)aCount[i] = 0;
-
-  if (in == NULL)
-  {
-    errorLog("Unable to open sketch for scenario reading", 0);
-  }
-  else
-  {
-    while (fgets(row, 120, in) != NULL)
-    {
-
-      if (p = strstr(row, "SCENDIGPIN"))
-      {
-        sscanf(p, "%s%d%d%d", junk, &pin, &step, &value);
-        pin   = checkRange(HEAL, "digpin", pin);
-        value = checkRange(HEAL, "digval", value);
-        step  = checkRange(HEAL, "step", step);
-        dCount[pin]++;
-        tmp = dCount[pin];
-        if (step < s_digitalStep[tmp - 1][pin])
-          fprintf(e_log, "Error:Scenario data not given in increasing order: Digital Step=%d Pin=%d\n", step, pin);
-        s_digitalStep[tmp][pin]  = step;
-        s_digitalPin[tmp][pin]   = value;
-        s_digitalStep[0][pin]    = tmp;
-      }
-      if (p = strstr(row, "SCENANAPIN"))
-      {
-        sscanf(p, "%s%d%d%d", junk, &pin, &step, &value);
-        pin   = checkRange(HEAL, "anapin", pin);
-        value = checkRange(HEAL, "anaval", value);
-        step  = checkRange(HEAL, "step", step);
-        aCount[pin]++;
-        tmp = aCount[pin];
-        if (step < s_analogStep[tmp - 1][pin])
-          fprintf(e_log, "Error:Scenario data not given in increasing order: Analog Step=%d Pin=%d\n", step, pin);
-        s_analogStep[tmp][pin]   = step;
-        s_analogPin[tmp][pin]    = value;
-        s_analogStep[0][pin]     = tmp;
-      }
-    }
-  }
-}
-
-//====================================
-void readCustom()
-//====================================
-{
-  FILE *in;
-  char row[80], res[40], *p, *q, value[5];
-  int pin;
-
-  in = fopen("sketch.ino", "r");
-  if (in == NULL)
-  {
-    errorLog("No sketch.ino", 0);
-  }
-  else
-  {
-    while (fgets(row, 80, in) != NULL)
-    {
-      if (p = strstr(row, "PINMODE_IN:"))
-      {
-        pin = wCustomLog(p, res);
-        //strcpy(textPinModeIn[pin],res);
-        strcpy(g_custText[S_PIN_MODE_INPUT][pin], res);
-      }
-      if (p = strstr(row, "PINMODE_OUT:"))
-      {
-        pin = wCustomLog(p, res);
-        //strcpy(textPinModeOut[pin],res);
-        strcpy(g_custText[S_PIN_MODE_OUTPUT][pin], res);
-      }
-      if (p = strstr(row, "DIGITALWRITE_LOW:"))
-      {
-        pin = wCustomLog(p, res);
-        //strcpy(textDigitalWriteLow[pin],res);
-        strcpy(g_custText[S_DIGITAL_WRITE_LOW][pin], res);
-      }
-      if (p = strstr(row, "DIGITALWRITE_HIGH:"))
-      {
-        pin = wCustomLog(p, res);
-        //strcpy(textDigitalWriteHigh[pin],res);
-        strcpy(g_custText[S_DIGITAL_WRITE_HIGH][pin], res);
-      }
-      if (p = strstr(row, "ANALOGREAD:"))
-      {
-        pin = wCustomLog(p, res);
-        //strcpy(textAnalogRead[pin],res);
-        strcpy(g_custText[S_ANALOG_READ][pin], res);
-      }
-      if (p = strstr(row, "DIGITALREAD:"))
-      {
-        pin = wCustomLog(p, res);
-        //strcpy(textDigitalRead[pin],res);
-        strcpy(g_custText[S_DIGITAL_READ][pin], res);
-      }
-      if (p = strstr(row, "ANALOGWRITE:"))
-      {
-        pin = wCustomLog(p, res);
-        //strcpy(textAnalogWrite[pin],res);
-        strcpy(g_custText[S_ANALOG_WRITE][pin], res);
-      }
-    }
-    fclose(in);
   }
 }
 

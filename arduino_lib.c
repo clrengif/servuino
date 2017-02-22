@@ -16,13 +16,9 @@
 */
 
 
-#include "Esplora.h"
-
 //=====================================
 // Functions
 //=====================================
-
-
 
 //------ Digital I/O -----------------------
 
@@ -85,16 +81,19 @@ int shiftIn(int dataPin, int clockPin, int bitOrder)
 {
   //bitOrder: which order to shift out the bits; either MSBFIRST or LSBFIRST.
   servuinoFunc(S_UNIMPLEMENTED, 0, 0, "shiftIn()", 0);
+  return -9;
 }
 
 unsigned long pulseIn(int pin, int value)
 {
   servuinoFunc(S_UNIMPLEMENTED, 0, 0, "pulseIn()", 0);
+  return -9;
 }
 
 unsigned long pulseIn(int pin, int value, unsigned long timeout)
 {
   servuinoFunc(S_UNIMPLEMENTED, 0, 0, "pulseIn()", 0);
+  return -9;
 }
 
 //------ Time ------------------------------
@@ -219,8 +218,6 @@ void  bitSet(unsigned int *x, int n)
 
   mask = 1 << n;
   *x  = *x | mask;
-
-  return     ;
 }
 
 void bitClear(unsigned int *x, int n)
@@ -229,8 +226,6 @@ void bitClear(unsigned int *x, int n)
 
   mask = 1 << n;
   *x  = *x & ~mask;
-
-  
 }
 
 void bitWrite(unsigned int *x, int n, int b)
@@ -244,7 +239,6 @@ void bitWrite(unsigned int *x, int n, int b)
 int bit(int n)
 {
   int res;
-  //for(i=0;i<n;i++)res = res*2;
   res = 1 << n;
   return (res);
 }
@@ -432,116 +426,6 @@ void serial::println(unsigned char uc)
 void serial::write(char *p)
 {
   servuinoFunc(S_SERIAL_WRITE, 0, 0, p, 0);
-}
-
-
-//==========================================
-// Esplora
-//==========================================
-int esplora::readSlider() {
-  cout << "called Esplora.readSlider()" << endl;
-}
-
-int esplora::readLightSensor() {
-  cout << "called Esplora.readLightSensor()" << endl;
-
-}
-
-int esplora::readTemperature(byte scale) {
-  cout << "called Esplora.readTemperature()" << endl;
-
-}
-
-int esplora::readMicrophone() {
-  cout << "called Esplora.readMicrophone()" << endl;
-
-}
-
-int esplora::readJoystickSwitch() {
-  cout << "called Esplora.readJoystickSwitch()" << endl;
-
-}
-
-int esplora::readJoystickButton() {
-  cout << "called Esplora.readJoystickButton()" << endl;
-
-}
-
-int esplora::readAccelerometer(byte axis) {
-  cout << "called Esplora.readAccelerometer()" << endl;
-
-}
-
-int esplora::readButton(byte button) {
-  cout << "called Esplora.readButton()" << endl;
-
-}
-
-int esplora::readJoystickX() {
-  cout << "called Esplora.readJoystickX()" << endl;
-
-}
-
-int esplora::readJoystickY() {
-  cout << "called Esplora.readJoystickY()" << endl;
-
-}
-
-void esplora::writeRGB(byte red, byte green, byte blue) {
-  cout << "called Esplora.writeRGB()" << endl;
-  writeRed(red);
-  writeGreen(green);
-  writeBlue(blue);
-}
-
-void esplora::writeRed(byte red) {
-  cout << "called Esplora.writeRed()" << endl;
-  lastRed = red;
-
-}
-
-void esplora::writeGreen(byte green) {
-  cout << "called Esplora.writeGreen()" << endl;
-  lastGreen = green;
-
-}
-
-void esplora::writeBlue(byte blue) {
-  cout << "called Esplora.writeBlue()" << endl;
-  lastBlue = blue;
-}
-
-byte esplora::readRed() {
-  cout << "called Esplora.readRed()" << endl;
-  return lastRed;
-
-}
-
-byte esplora::readGreen() {
-  cout << "called Esplora.readGreen()" << endl;
-  return lastGreen;
-
-}
-
-byte esplora::readBlue() {
-  cout << "called Esplora.readBlue()" << endl;
-  return lastBlue;
-
-}
-
-void esplora::noTone() {
-  cout << "called Esplora.noTone()" << endl;
-
-}
-
-void esplora::tone(unsigned int freq) {
-  cout << "called Esplora.tone()" << endl;
-
-}
-
-void esplora::tone(unsigned int freq, unsigned long duration) {
-  cout << "called Esplora.tone(freq, dur)" << endl;
-
 }
 
 

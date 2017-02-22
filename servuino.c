@@ -21,6 +21,7 @@
 #include <string>
 #include <fstream>
 #include <math.h>
+#include <sys/inotify.h>
 using namespace std;
 #include "common.h"
 
@@ -140,8 +141,7 @@ FILE *f_pinmod, *f_digval, *f_anaval, *f_pinrw;
 #include "servuino.h"
 #include "servuino_lib.c"
 #include "arduino_lib.c"
-
-#include <regex>
+#include "Esplora.c"
 
 ifstream infile("sketch/sketch.ino");
 #include "sketch/sketch.ino"
@@ -189,7 +189,6 @@ int main(int argc, char *argv[])
   if (g_boardType == MEGA)g_nDigPins = MAX_PIN_DIGITAL_MEGA;
 
   //boardInit();
-  //readScenario();
   //readCustom(); // Get customized log text from sketch
 
   if (argc == 1)
@@ -202,7 +201,6 @@ int main(int argc, char *argv[])
   {
     g_simulationLength = atoi(argv[1]);
     g_scenSource = atoi(argv[2]);
-    readScenario(); // Maybe other source
     runEncoding(g_simulationLength);
 
   }
@@ -217,7 +215,6 @@ int main(int argc, char *argv[])
     g_pinStep          =  atoi(argv[6]);
     g_action           =  atoi(argv[7]);
 
-    readScenario();// read from data.scen
 
     max_steps = g_simulationLength;
 

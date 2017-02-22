@@ -363,12 +363,12 @@ int servuinoFunc(int event, int pin, int value, const char *p, unsigned char uc)
     res = 0;
   }
 
-  cout << eventText << ", " <<  g_curStep << ", " << g_simulationLength << endl;
+  cout << eventText << ", " <<  g_curStep << ", " << g_simulationLength << ", " << micros_elapsed << endl;
   //logEvent(eventText);
   //logCust(custText);
   //writeStatus();
 
-  if (g_curStep == g_simulationLength) stopEncoding();
+  //if (g_curStep == g_simulationLength) stopEncoding();
 
   if (g_doInterrupt == S_YES && g_ongoingInterrupt == S_NO)interruptNow();
 
@@ -1391,17 +1391,6 @@ int wCustomLog(char *in, char *out)
 
 
 
-//====================================
-void stopEncoding()
-//====================================
-{
-
-  //fprintf(f_event, "# ENDOFSIM\n");
-  //saveScenario();
-  //saveScenarioExpanded();
-  //closeFiles();
-  exit(0);
-}
 //====================================
 void savePinStatus()
 //====================================

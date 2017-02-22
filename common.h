@@ -17,6 +17,8 @@
 
 
 // Board ====================
+#ifndef COMMON_H_
+#define COMMON_H_
 
 #define UNO     1
 #define MEGA    2
@@ -143,6 +145,7 @@
 int g_boardType   = UNO;
 void errorLog(const char msg[], int x);
 int checkRange(int mode,const char check[],int value);
+void increment_counter(int us);
 
 int max_digVal,min_digVal,max_anaVal,min_anaVal;
 int max_digPin,min_digPin,max_anaPin,min_anaPin;
@@ -158,3 +161,4 @@ int attached[MAX_PIN_IR_MEGA];
 
 // End of file
 
+#endif

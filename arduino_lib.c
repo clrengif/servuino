@@ -24,6 +24,7 @@
 
 void pinMode(int pin, int mode)
 {
+  increment_counter(20);
   if (mode == INPUT)
     servuinoFunc(S_PIN_MODE_INPUT, pin, mode, NULL, 0);
   if (mode == OUTPUT)
@@ -32,6 +33,7 @@ void pinMode(int pin, int mode)
 }
 void digitalWrite(int pin, int value)
 {
+  increment_counter(20);
   if (value == 0)
     servuinoFunc(S_DIGITAL_WRITE_LOW, pin, value, NULL, 0);
   if (value == 1)
@@ -40,17 +42,20 @@ void digitalWrite(int pin, int value)
 }
 int digitalRead(int pin)
 {
+  increment_counter(20);
   return (servuinoFunc(S_DIGITAL_READ, pin, 0, NULL, 0));
 }
 
 void analogWrite(int pin, int value) //PWM
 {
+  increment_counter(20);
   servuinoFunc(S_ANALOG_WRITE, pin, value, NULL, 0);
   
 }
 
 int analogRead(int pin)
 {
+  increment_counter(20);
   pin = g_nDigPins + pin;
   return (servuinoFunc(S_ANALOG_READ, pin, 0, NULL, 0));
 }
@@ -100,22 +105,26 @@ unsigned long pulseIn(int pin, int value, unsigned long timeout)
 
 unsigned long millis()
 {
+  increment_counter(1);
   return (g_curStep * 100);
 }
 
 unsigned long micros()
 {
+  increment_counter(1);
   return (g_curStep * 100000);
 }
 
 void delay(int ms)
 {
+  increment_counter(ms*1000);
   servuinoFunc(S_DELAY, ms, 0, NULL, 0);
   
 }
 
 void delayMicroseconds(int us)
 {
+  increment_counter(us);
   servuinoFunc(S_DELAY_MS, us, 0, NULL, 0);
   
 }
@@ -135,11 +144,13 @@ void test_math()
 
 double sq(double x)
 {
+  increment_counter(100);
   return (sqrt(x));
 }
 
 int map(int x, int fromLow, int fromHigh, int toLow, int toHigh)
 {
+  increment_counter(100);
   int y;
   y = (float)(x - fromLow) / (fromHigh - fromLow) * (toHigh - toLow) + toLow;
   //printf("%d %d\n",x,y);
@@ -148,6 +159,7 @@ int map(int x, int fromLow, int fromHigh, int toLow, int toHigh)
 
 int constrain(int x, int a, int b)
 {
+  increment_counter(100);
   int res;
   if (x <= b && x >= a)res = x;
   if (x > b)res = b;
@@ -166,11 +178,13 @@ void test_trigonometry()
 //------ Random Numbers --------------------
 void randomSeed(int seed)
 {
+  increment_counter(100);
   srand(seed);
 }
 
 long random(long upperLimit)
 {
+  increment_counter(100);
   long x = RAND_MAX / upperLimit;
   x = long(rand() / x);
   return (x);
@@ -178,6 +192,7 @@ long random(long upperLimit)
 
 long random(long lowerLimit, long upperLimit)
 {
+  increment_counter(100);
   long interval, temp = 0;
   if (lowerLimit < upperLimit)
   {
@@ -191,11 +206,13 @@ long random(long lowerLimit, long upperLimit)
 //------ Bits and Bytes --------------------
 unsigned char lowByte(int x)
 {
+  increment_counter(100);
   return (x & 0xff);
 }
 
 unsigned char highByte(int x)
 {
+  increment_counter(100);
   unsigned char y;
   x = x & 0xff00;
   y = x >> 8;
@@ -204,6 +221,7 @@ unsigned char highByte(int x)
 
 int bitRead(int x, int n)
 {
+  increment_counter(100);
   int bit;
   //printf("bitRead: x=%d n=%d PORTB=%d\n",x,n,PORTB);
   bit = x >> n;
@@ -214,6 +232,7 @@ int bitRead(int x, int n)
 
 void  bitSet(unsigned int *x, int n)
 {
+  increment_counter(100);
   int res, mask;
 
   mask = 1 << n;
@@ -222,6 +241,7 @@ void  bitSet(unsigned int *x, int n)
 
 void bitClear(unsigned int *x, int n)
 {
+  increment_counter(100);
   int res, mask;
 
   mask = 1 << n;
@@ -230,6 +250,7 @@ void bitClear(unsigned int *x, int n)
 
 void bitWrite(unsigned int *x, int n, int b)
 {
+  increment_counter(100);
   //printf("bitWrite: %d %d %d PORTB=%d\n",*x,n,b,PORTB);
   if (b == 0)bitClear(x, n);
   if (b == 1)bitSet(x, n);
@@ -249,6 +270,7 @@ int bit(int n)
 
 void attachInterrupt(int ir, void(*func)(), int mode)
 {
+  increment_counter(100);
   int pin, ok = S_NOK;
 
   ok = checkRange(S_OK, "interrupt", ir);
@@ -290,6 +312,7 @@ void attachInterrupt(int ir, void(*func)(), int mode)
 //---------------------------------------------------
 void detachInterrupt(int ir)
 {
+  increment_counter(100);
   int ok = S_NOK, pin;
 
 
@@ -340,47 +363,55 @@ void serial::end()
 
 int serial::available()  // returns the number of bytes available to read
 {
+  increment_counter(12);
   servuinoFunc(S_UNIMPLEMENTED, 0, 0, "Serial.available()", 0);
   return (1);
 }
 
 char serial::read() // the first byte of incoming serial data available (or -1 if no data is available)
 {
+  increment_counter(100);
   servuinoFunc(S_UNIMPLEMENTED, 0, 0, "Serial.read()", 0);
   return (-1);
 }
 
 int serial::peek()
 {
+  increment_counter(100);
   servuinoFunc(S_UNIMPLEMENTED, 0, 0, "Serial.peek()", 0);
   return (-1);
 }
 
 void serial::flush()
 {
+  increment_counter(100);
   servuinoFunc(S_UNIMPLEMENTED, 0, 0, "Serial.flush()", 0);
 }
 
 void serial::print(int x)
 {
+  increment_counter(100);
   servuinoFunc(S_SERIAL_PRINT_INT, x, 0, NULL, 0);
   
 }
 
 void serial::print(int x, int base)
 {
+  increment_counter(100);
   servuinoFunc(S_SERIAL_PRINT_INT_BASE, x, base, NULL, 0);
   
 }
 
 void serial::print(const char *p)
 {
+  increment_counter(100);
   servuinoFunc(S_SERIAL_PRINT_CHAR, 0, 0, p, 0);
   
 }
 
 void serial::print(unsigned char uc)
 {
+  increment_counter(100);
   servuinoFunc(S_SERIAL_PRINT_UCHAR, 0, 0, NULL, uc);
   
 }
@@ -388,18 +419,21 @@ void serial::print(unsigned char uc)
 
 void serial::println(int x)
 {
+  increment_counter(100);
   servuinoFunc(S_SERIAL_PRINTLN_INT, x, 0, NULL, 0);
   
 }
 
 void serial::println(const char *p)
 {
+  increment_counter(100);
   servuinoFunc(S_SERIAL_PRINTLN_CHAR, 0, 0, p, 0);
   
 }
 
 void serial::println(string s)
 {
+  increment_counter(100);
   const char *p;
   p = s.c_str();
   servuinoFunc(S_SERIAL_PRINTLN_STRING, 0, 0, p, 0);
@@ -408,6 +442,7 @@ void serial::println(string s)
 
 void serial::println(String s)
 {
+  increment_counter(100);
   const char *p;
   p = s.getPointer();
   servuinoFunc(S_SERIAL_PRINTLN_SSTRING, 0, 0, p, 0);
@@ -415,16 +450,19 @@ void serial::println(String s)
 }
 void serial::println()
 {
+  increment_counter(100);
   servuinoFunc(S_SERIAL_PRINTLN_VOID, 0, 0, NULL, 0);
 }
 
 void serial::println(unsigned char uc)
 {
+  increment_counter(100);
   servuinoFunc(S_SERIAL_PRINTLN_UCHAR, 0, 0, NULL, uc);
 }
 
 void serial::write(char *p)
 {
+  increment_counter(100);
   servuinoFunc(S_SERIAL_WRITE, 0, 0, p, 0);
 }
 
@@ -437,6 +475,7 @@ void serial::write(char *p)
 String::String( const char *s )
   : lngth( ( s != 0 ) ? strlen( s ) : 0 )
 {
+  increment_counter(100);
   //cout << "Conversion (and default) constructor: " << s << endl;
   setString( s ); // call utility function
 }
@@ -445,6 +484,7 @@ String::String( const char *s )
 String::String( const String &copy )
   : lngth( copy.lngth )
 {
+  increment_counter(100);
   //cout << "Copy constructor: " << copy.sPtr << endl;
   setString( copy.sPtr ); // call utility function
 }

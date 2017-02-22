@@ -24,7 +24,7 @@
 #include <sys/inotify.h>
 using namespace std;
 #include "common.h"
-
+#include <mutex>
 
 //===================================
 // Simulator status
@@ -47,6 +47,10 @@ int g_doInterrupt = S_NO;
 int g_serialMode = S_OFF;
 
 char g_custText[120][120][100];
+
+
+uint32_t micros_elapsed = 0;
+mutex mic;
 //===================================
 
 
@@ -146,8 +150,8 @@ FILE *f_pinmod, *f_digval, *f_anaval, *f_pinrw;
 ifstream infile("sketch/sketch.ino");
 #include "sketch/sketch.ino"
 
-void setup();
-void loop();
+// void setup();
+// void loop();
 
 //====================================
 void runEncoding(int n)
@@ -155,22 +159,17 @@ void runEncoding(int n)
 {
   int i;
 
-  //saveScenarioExpanded();
 
   g_curStep = 0;
-  //ino(g_row_setup);
   servuinoFunc(S_SETUP, 0, 0, NULL, 0);
   setup();
 
   for (i = 0; i < MAX_LOOPS; i++)
   {
     g_curLoop++;
-    //ino(g_row_loop);
     servuinoFunc(S_LOOP, g_curLoop, 0, NULL, 0);
     loop();
   }
-  stopEncoding();
-  return;
 }
 
 
@@ -233,6 +232,6 @@ int main(int argc, char *argv[])
   else
     errorLog("Servuino not executed", 0);
 
-  //closeFiles();
+  return EXIT_SUCCESS;
 }
 

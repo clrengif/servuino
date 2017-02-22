@@ -35,13 +35,6 @@ using std::stringstream;
 #define FALLING 13
 
 
-#ifndef max
-#define max( a, b ) ( ((a) > (b)) ? (a) : (b) )
-#endif
-
-#ifndef min
-#define min( a, b ) ( ((a) < (b)) ? (a) : (b) )
-#endif
 
 #define _BV(bit) (1 << (bit))
 

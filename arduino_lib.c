@@ -397,7 +397,7 @@ void serial::print(int x)
 
 void serial::print(int x, int base)
 {
-  increment_counter(100);
+  increment_counter(16);
   servuinoFunc(S_SERIAL_PRINT_INT_BASE, x, base, NULL, 0);
   
 }

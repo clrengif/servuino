@@ -50,7 +50,7 @@ char g_custText[120][120][100];
 
 
 uint32_t micros_elapsed = 0;
-mutex elsapsed;
+mutex elapsed;
 //===================================
 
 

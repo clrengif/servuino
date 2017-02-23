@@ -49,7 +49,7 @@ int g_serialMode = S_OFF;
 char g_custText[120][120][100];
 
 
-uint32_t micros_elapsed = 0;
+uint64_t micros_elapsed = 0;
 mutex elapsed;
 //===================================
 
@@ -149,6 +149,8 @@ FILE *f_pinmod, *f_digval, *f_anaval, *f_pinrw;
 
 #include "sketch/sketch.ino"
 
+bool running = true;
+
 // void setup();
 // void loop();
 
@@ -164,8 +166,7 @@ void runEncoding(int n)
   setup();
   increment_counter(1032);
 
-  for (i = 0; i < MAX_LOOPS; i++)
-  {
+  while(running) {
     g_curLoop++;
     servuinoFunc(S_LOOP, g_curLoop, 0, NULL, 0);
     loop();

@@ -24,47 +24,54 @@ using std::stringstream;
 
 #include <cstdint>
 
-#define LOW    0
-#define HIGH   1
 
-#define INPUT  0
-#define OUTPUT 1
+#define HIGH 0x1
+#define LOW  0x0
 
-#define CHANGE  11
-#define RISING  12
-#define FALLING 13
+#define INPUT 0x0
+#define OUTPUT 0x1
+#define INPUT_PULLUP 0x2
 
+#define PI 3.1415926535897932384626433832795
+#define HALF_PI 1.5707963267948966192313216916398
+#define TWO_PI 6.283185307179586476925286766559
+#define DEG_TO_RAD 0.017453292519943295769236907684886
+#define RAD_TO_DEG 57.295779513082320876798154814105
+#define EULER 2.718281828459045235360287471352
+
+#define SERIAL  0x0
+#define DISPLAY 0x1
+
+#define LSBFIRST 0
+#define MSBFIRST 1
+
+#define CHANGE 1
+#define FALLING 2
+#define RISING 3
 
 
 #define _BV(bit) (1 << (bit))
 
 #include "binary.h"
 
-//typedef int byte;
 typedef uint8_t byte;
-typedef int word;
+typedef unsigned int word;
 typedef bool boolean;
+
+// #define min(a,b) ((a)<(b)?(a):(b))
+// #define max(a,b) ((a)>(b)?(a):(b))
+// #define abs(x) ((x)>0?(x):-(x))
+// #define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
+// #define round(x)     ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))
+#define radians(deg) ((deg)*DEG_TO_RAD)
+#define degrees(rad) ((rad)*RAD_TO_DEG)
+// #define sq(x) ((x)*(x))
 
 
 // Functions
 int   bitRead(int x, int n);
 void  bitSet(unsigned int *x, int n);
 
-int A0;
-int A1;
-int A2;
-int A3;
-int A4;
-int A5;
-int A6;
-int A7;
-int A8;
-int A9;
-int A10;
-int A11;
-int A12;
-int A13;
-int A14;
 
 unsigned int PORTA=0,PORTB=0,PORTC=0,PORTD=0,PORTE=0,PORTF=0,PORTG=0;
 unsigned int PORTH=0,PORTJ=0,PORTK=0,PORTL=0,PORTM=0,PORTN=0;

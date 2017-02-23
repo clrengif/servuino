@@ -145,7 +145,7 @@ void test_math()
 double sq(double x)
 {
   increment_counter(100);
-  return (sqrt(x));
+  return ((x)*(x));
 }
 
 int map(int x, int fromLow, int fromHigh, int toLow, int toHigh)

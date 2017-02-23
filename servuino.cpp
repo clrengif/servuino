@@ -50,7 +50,7 @@ char g_custText[120][120][100];
 
 
 uint32_t micros_elapsed = 0;
-mutex mic;
+mutex elsapsed;
 //===================================
 
 
@@ -147,7 +147,6 @@ FILE *f_pinmod, *f_digval, *f_anaval, *f_pinrw;
 #include "arduino_lib.c"
 #include "Esplora.c"
 
-ifstream infile("sketch/sketch.ino");
 #include "sketch/sketch.ino"
 
 // void setup();
@@ -163,6 +162,7 @@ void runEncoding(int n)
   g_curStep = 0;
   servuinoFunc(S_SETUP, 0, 0, NULL, 0);
   setup();
+  increment_counter(1032);
 
   for (i = 0; i < MAX_LOOPS; i++)
   {
@@ -179,10 +179,7 @@ int main(int argc, char *argv[])
 {
   int x, i;
 
-  strcpy(g_version, "0.1.2");
 
-  //openFiles();
-  //readSketchInfo();
   g_nTotPins = setRange(g_boardType);
   if (g_boardType == UNO)g_nDigPins = MAX_PIN_DIGITAL_UNO;
   if (g_boardType == MEGA)g_nDigPins = MAX_PIN_DIGITAL_MEGA;

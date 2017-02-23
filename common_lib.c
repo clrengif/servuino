@@ -19,9 +19,9 @@
 void
 increment_counter(int us)
 {
-  mic.lock();
+  elapsed.lock();
   micros_elapsed += us;
-  mic.unlock();
+  elapsed.unlock();
 }
 
 //====================================

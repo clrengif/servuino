@@ -65,315 +65,315 @@ void logStatus()
   //fprintf(s_log,"%d %s\n",g_curStep,ev);
 }
 
-//====================================
-int servuinoFunc(int event, int pin, int value, const char *p, unsigned char uc)
-//====================================
-{
-  int res = 999, fail = 0;
-  char eventText[120];
-  char custText[120];
+// //====================================
+// int servuinoFunc(int event, int pin, int value, const char *p, unsigned char uc)
+// //====================================
+// {
+//   int res = 999, fail = 0;
+//   char eventText[120];
+//   char custText[120];
 
-  strcpy(custText, "no-text");
+//   strcpy(custText, "no-text");
 
-  g_curStep++;
+//   g_curStep++;
 
-  updateFromRegister();
-  clearRW();
-  if (g_ongoingInterrupt == S_NO)interruptPinValues();
+//   updateFromRegister();
+//   clearRW();
+//   if (g_ongoingInterrupt == S_NO)interruptPinValues();
 
-  if (g_serialMode == S_ON)
-  {
-    x_pinMode[0] = RX;
-    x_pinMode[1] = TX;
-  }
+//   if (g_serialMode == S_ON)
+//   {
+//     x_pinMode[0] = RX;
+//     x_pinMode[1] = TX;
+//   }
 
-  sprintf(eventText, "%d Unknown event: %d pin=%d value=%d", g_curStep, event, pin, value);
+//   sprintf(eventText, "%d Unknown event: %d pin=%d value=%d", g_curStep, event, pin, value);
 
-  if (event == S_UNIMPLEMENTED)
-  {
-    sprintf(eventText, "Unimplemented: %s", p);
-  }
-  if (event == S_SETUP)
-  {
-    sprintf(eventText, "setup");
-  }
-  if (event == S_LOOP)
-  {
-    sprintf(eventText, "servuinoLoop %d", g_curLoop);
-  }
-  if (event == S_PIN_MODE_INPUT)
-  {
-    fail = checkRange(FAIL, "digpin", pin);
-    if (fail == 0)
-    {
-      x_pinMode[pin] = value;
-      if (value == INPUT)
-      {
-        // Set pin status according to scenario when mode is INPUT
-        res = x_pinScenario[pin][g_curStep];
-        x_pinDigValue[pin] = res;
-        writeRegister(1, R_PIN, pin, value);
+//   if (event == S_UNIMPLEMENTED)
+//   {
+//     sprintf(eventText, "Unimplemented: %s", p);
+//   }
+//   if (event == S_SETUP)
+//   {
+//     sprintf(eventText, "setup");
+//   }
+//   if (event == S_LOOP)
+//   {
+//     sprintf(eventText, "servuinoLoop %d", g_curLoop);
+//   }
+//   if (event == S_PIN_MODE_INPUT)
+//   {
+//     fail = checkRange(FAIL, "digpin", pin);
+//     if (fail == 0)
+//     {
+//       x_pinMode[pin] = value;
+//       if (value == INPUT)
+//       {
+//         // Set pin status according to scenario when mode is INPUT
+//         res = x_pinScenario[pin][g_curStep];
+//         x_pinDigValue[pin] = res;
+//         writeRegister(1, R_PIN, pin, value);
 
-        writeRegister(1, R_DDR, pin, 0);
-        sprintf(eventText, "pinMode pin=%d INPUT", pin);
-        sprintf(custText, "%s %d", g_custText[event][pin], pin);
-      }
-    }
-    res = 0;
-  }
-  if (event == S_PIN_MODE_OUTPUT)
-  {
-    fail = checkRange(FAIL, "digpin", pin);
-    if (fail == 0)
-    {
-      x_pinMode[pin] = value;
-      if (value == OUTPUT)
-      {
-        // Set pin status according to PORT register when mode is OUTPUT
-        x_pinDigValue[pin] = readRegister(R_PORT, pin);
+//         writeRegister(1, R_DDR, pin, 0);
+//         sprintf(eventText, "pinMode pin=%d INPUT", pin);
+//         sprintf(custText, "%s %d", g_custText[event][pin], pin);
+//       }
+//     }
+//     res = 0;
+//   }
+//   if (event == S_PIN_MODE_OUTPUT)
+//   {
+//     fail = checkRange(FAIL, "digpin", pin);
+//     if (fail == 0)
+//     {
+//       x_pinMode[pin] = value;
+//       if (value == OUTPUT)
+//       {
+//         // Set pin status according to PORT register when mode is OUTPUT
+//         x_pinDigValue[pin] = readRegister(R_PORT, pin);
 
-        writeRegister(1, R_DDR, pin, 1);
-        sprintf(eventText, "pinMode pin=%d OUTPUT", pin);
-        sprintf(custText, "%s %d", g_custText[event][pin], pin);
-      }
-    }
-    res = 0;
-  }
-  if (event == S_DIGITAL_WRITE_LOW || event == S_DIGITAL_WRITE_HIGH)
-  {
-    x_pinRW[pin] = T_WRITE;
-    fail = checkRange(FAIL, "digpin", pin);
-    fail = fail + checkRange(FAIL, "digval", value);
-    if (fail == 0)
-    {
-      x_pinDigValue[pin] = value;
-      writeRegister(1, R_PORT, pin, value);
-      sprintf(eventText, "digitalWrite pin=%d value=%d", pin, value);
-      sprintf(custText, "%s %d", g_custText[event][pin], value);
-    }
-    res = 0;
-    if (x_pinMode[pin] != OUTPUT)
-      errorLog("DigitalWrite when pin Mode is INPUT", pin);
-  }
-  if (event == S_DIGITAL_READ)
-  {
-    x_pinRW[pin] = T_READ;
-    res = x_pinScenario[pin][g_curStep];
-    x_pinDigValue[pin] = res;
-    writeRegister(1, R_PIN, pin, value);
-    sprintf(eventText, "digitalRead pin=%d value=%d", pin, res);
-    sprintf(custText, "%s %d", g_custText[event][pin], res);
-    //value = getDigitalPinValue(pin,currentStep);
-    if (x_pinMode[pin] != INPUT)
-      errorLog("DigitalRead when pin Mode is OUPUT", pin);
-  }
-  if (event == S_ANALOG_WRITE) //PWM pinMode OUTPUT not necessary (see arduino.com)
-  {
-    x_pinRW[pin] = T_WRITE;
-    fail = checkRange(FAIL, "pwmpin", pin);
-    fail = fail + checkRange(FAIL, "pwmval", value);
-    if (fail == 0)
-    {
-      x_pinAnaValue[pin] = value;
-      //writeRegister(pin,value);
-      sprintf(eventText, "analogWrite pin=%d value=%d", pin, value);
-      sprintf(custText, "%s %d", g_custText[event][pin], value);
-    }
-    res = 0;
-  }
-  if (event == S_ANALOG_READ)
-  {
-    x_pinRW[pin] = T_READ;
-    res = x_pinScenario[pin][g_curStep];
-    x_pinAnaValue[pin] = res;
-    sprintf(eventText, "analogRead pin=%d value=%d", pin - g_nDigPins, res);
-    sprintf(custText, "%s %d", g_custText[event][pin], res);
-  }
-  if (event == S_ANALOG_REFERENCE)
-  {
-    sprintf(eventText, "analogReference type=%s", p);
-  }
-  if (event == S_DELAY)
-  {
-    sprintf(eventText, "delay %d ms", pin);
-    //fprintf(f_time, "+ %d %d\n", g_curStep, pin * 1000);
-  }
-  if (event == S_DELAY_MS)
-  {
-    sprintf(eventText, "delay %d us", pin);
-    //fprintf(f_time, "+ %d %d\n", g_curStep, pin);
-  }
-  if (event == S_ATTACH_INTERRUPT_LOW)
-  {
-    sprintf(eventText, "attached LOW interrupt %d", pin);
-  }
-  if (event == S_ATTACH_INTERRUPT_RISING)
-  {
-    sprintf(eventText, "attached RISING interrupt %d", pin);
-  }
-  if (event == S_ATTACH_INTERRUPT_FALLING)
-  {
-    sprintf(eventText, "attached FALLING interrupt %d", pin);
-  }
-  if (event == S_ATTACH_INTERRUPT_CHANGE)
-  {
-    sprintf(eventText, "attached CHANGE interrupt %d", pin);
-  }
-  if (event == S_DETACH_INTERRUPT)
-  {
-    g_interruptType[pin] = 0;
-    sprintf(eventText, "detached interrupt %d", pin);
-  }
-  if (event == S_SERIAL_BEGIN)
-  {
-    sprintf(eventText, "Serial.begin baud=%d", pin);
-    if (g_serialMode == S_ON)
-      errorLog("Serial begin already exists", g_curStep);
-    g_serialMode = S_ON;
-  }
-  if (event == S_SERIAL_END)
-  {
-    sprintf(eventText, "Serial.end");
-    if (g_serialMode != S_ON)
-      errorLog("Serial end without serial.begin", g_curStep);
-    g_serialMode = S_OFF;
-  }
-  if (event == S_SERIAL_PRINT_INT)
-  {
-    sprintf(eventText, "Serial.print(int) %d", pin);
-    //fprintf(f_serial, "%d SL [%d]\n", g_curStep, pin);
-    if (g_serialMode != S_ON)
-      errorLog("Serial print without serial.begin", g_curStep);
-  }
-  if (event == S_SERIAL_PRINT_INT_BASE)
-  {
-    sprintf(eventText, "Serial.print(int,base) %d base=%d", pin, value);
-    //fprintf(f_serial, "%d SL [%d]\n", g_curStep, pin);
-    if (g_serialMode != S_ON)
-      errorLog("Serial print without serial.begin", g_curStep);
-  }
-  if (event == S_SERIAL_PRINT_CHAR)
-  {
-    sprintf(eventText, "Serial.print(char) %s", p);
-    //fprintf(f_serial, "%d SL [%s]\n", g_curStep, p);
-    if (g_serialMode != S_ON)
-      errorLog("Serial print without serial.begin", g_curStep);
-  }
-  if (event == S_SERIAL_PRINT_UCHAR)
-  {
-    sprintf(eventText, "Serial.print(uchar) %c", uc);
-    //fprintf(f_serial, "%d SL [%c]\n", g_curStep, uc);
-    if (g_serialMode != S_ON)
-      errorLog("Serial print without serial.begin", g_curStep);
-  }
-  if (event == S_SERIAL_PRINT_STRING)
-  {
-    sprintf(eventText, "Serial.print(string) %s", p);
-    //fprintf(f_serial, "%d SL [%s]\n", g_curStep, p);
-    if (g_serialMode != S_ON)
-      errorLog("Serial print without serial.begin", g_curStep);
-  }
-  if (event == S_SERIAL_PRINT_SSTRING)
-  {
-    sprintf(eventText, "Serial.print(String) %s", p);
-    //fprintf(f_serial, "%d SL [%s]\n", g_curStep, p);
-    if (g_serialMode != S_ON)
-      errorLog("Serial print without serial.begin", g_curStep);
-  }
-  if (event == S_SERIAL_PRINTLN_INT)
-  {
-    sprintf(eventText, "Serial.println(int) %d", pin);
-    //fprintf(f_serial, "%d NL [%d]\n", g_curStep, pin);
-    if (g_serialMode != S_ON)
-      errorLog("Serial print without serial.begin", g_curStep);
-  }
-  if (event == S_SERIAL_PRINTLN_INT_BASE)
-  {
-    sprintf(eventText, "Serial.println(int,base) %d base=%d", pin, value);
-    //fprintf(f_serial, "%d NL [%d]\n", g_curStep, pin);
-    if (g_serialMode != S_ON)
-      errorLog("Serial print without serial.begin", g_curStep);
-  }
-  if (event == S_SERIAL_PRINTLN_CHAR)
-  {
-    sprintf(eventText, "Serial.println(char) %s", p);
-    //fprintf(f_serial, "%d NL [%s]\n", g_curStep, p);
-    if (g_serialMode != S_ON)
-      errorLog("Serial print without serial.begin", g_curStep);
-  }
-  if (event == S_SERIAL_PRINTLN_UCHAR)
-  {
-    sprintf(eventText, "Serial.println(uchar) %c", uc);
-    //fprintf(f_serial, "%d NL [%c]\n", g_curStep, *p);
-    if (g_serialMode != S_ON)
-      errorLog("Serial print without serial.begin", g_curStep);
-  }
-  if (event == S_SERIAL_PRINTLN_STRING)
-  {
-    sprintf(eventText, "Serial.println(string) %s", p);
-    //fprintf(f_serial, "%d NL [%s]\n", g_curStep, p);
-    if (g_serialMode != S_ON)
-      errorLog("Serial print without serial.begin", g_curStep);
-  }
-  if (event == S_SERIAL_PRINTLN_SSTRING)
-  {
-    sprintf(eventText, "Serial.println(String) %s", p);
-    //fprintf(f_serial, "%d NL [%s]\n", g_curStep, p);
-    if (g_serialMode != S_ON)
-      errorLog("Serial print without serial.begin", g_curStep);
-  }
-  if (event == S_SERIAL_PRINTLN_VOID)
-  {
-    sprintf(eventText, "Serial.println(void)");
-    //fprintf(f_serial, "%d NL []\n", g_curStep);
-    if (g_serialMode != S_ON)
-      errorLog("Serial print without serial.begin", g_curStep);
-  }
-  if (event == S_SERIAL_WRITE)
-  {
-    sprintf(eventText, "Serial.write %s", p);
-    if (g_serialMode != S_ON)
-      errorLog("Serial print without serial.begin", g_curStep);
-  }
+//         writeRegister(1, R_DDR, pin, 1);
+//         sprintf(eventText, "pinMode pin=%d OUTPUT", pin);
+//         sprintf(custText, "%s %d", g_custText[event][pin], pin);
+//       }
+//     }
+//     res = 0;
+//   }
+//   if (event == S_DIGITAL_WRITE_LOW || event == S_DIGITAL_WRITE_HIGH)
+//   {
+//     x_pinRW[pin] = T_WRITE;
+//     fail = checkRange(FAIL, "digpin", pin);
+//     fail = fail + checkRange(FAIL, "digval", value);
+//     if (fail == 0)
+//     {
+//       x_pinDigValue[pin] = value;
+//       writeRegister(1, R_PORT, pin, value);
+//       sprintf(eventText, "digitalWrite pin=%d value=%d", pin, value);
+//       sprintf(custText, "%s %d", g_custText[event][pin], value);
+//     }
+//     res = 0;
+//     if (x_pinMode[pin] != OUTPUT)
+//       errorLog("DigitalWrite when pin Mode is INPUT", pin);
+//   }
+//   if (event == S_DIGITAL_READ)
+//   {
+//     x_pinRW[pin] = T_READ;
+//     res = x_pinScenario[pin][g_curStep];
+//     x_pinDigValue[pin] = res;
+//     writeRegister(1, R_PIN, pin, value);
+//     sprintf(eventText, "digitalRead pin=%d value=%d", pin, res);
+//     sprintf(custText, "%s %d", g_custText[event][pin], res);
+//     //value = getDigitalPinValue(pin,currentStep);
+//     if (x_pinMode[pin] != INPUT)
+//       errorLog("DigitalRead when pin Mode is OUPUT", pin);
+//   }
+//   if (event == S_ANALOG_WRITE) //PWM pinMode OUTPUT not necessary (see arduino.com)
+//   {
+//     x_pinRW[pin] = T_WRITE;
+//     fail = checkRange(FAIL, "pwmpin", pin);
+//     fail = fail + checkRange(FAIL, "pwmval", value);
+//     if (fail == 0)
+//     {
+//       x_pinAnaValue[pin] = value;
+//       //writeRegister(pin,value);
+//       sprintf(eventText, "analogWrite pin=%d value=%d", pin, value);
+//       sprintf(custText, "%s %d", g_custText[event][pin], value);
+//     }
+//     res = 0;
+//   }
+//   if (event == S_ANALOG_READ)
+//   {
+//     x_pinRW[pin] = T_READ;
+//     res = x_pinScenario[pin][g_curStep];
+//     x_pinAnaValue[pin] = res;
+//     sprintf(eventText, "analogRead pin=%d value=%d", pin - g_nDigPins, res);
+//     sprintf(custText, "%s %d", g_custText[event][pin], res);
+//   }
+//   if (event == S_ANALOG_REFERENCE)
+//   {
+//     sprintf(eventText, "analogReference type=%s", p);
+//   }
+//   if (event == S_DELAY)
+//   {
+//     sprintf(eventText, "delay %d ms", pin);
+//     //fprintf(f_time, "+ %d %d\n", g_curStep, pin * 1000);
+//   }
+//   if (event == S_DELAY_MS)
+//   {
+//     sprintf(eventText, "delay %d us", pin);
+//     //fprintf(f_time, "+ %d %d\n", g_curStep, pin);
+//   }
+//   if (event == S_ATTACH_INTERRUPT_LOW)
+//   {
+//     sprintf(eventText, "attached LOW interrupt %d", pin);
+//   }
+//   if (event == S_ATTACH_INTERRUPT_RISING)
+//   {
+//     sprintf(eventText, "attached RISING interrupt %d", pin);
+//   }
+//   if (event == S_ATTACH_INTERRUPT_FALLING)
+//   {
+//     sprintf(eventText, "attached FALLING interrupt %d", pin);
+//   }
+//   if (event == S_ATTACH_INTERRUPT_CHANGE)
+//   {
+//     sprintf(eventText, "attached CHANGE interrupt %d", pin);
+//   }
+//   if (event == S_DETACH_INTERRUPT)
+//   {
+//     g_interruptType[pin] = 0;
+//     sprintf(eventText, "detached interrupt %d", pin);
+//   }
+//   if (event == S_SERIAL_BEGIN)
+//   {
+//     sprintf(eventText, "Serial.begin baud=%d", pin);
+//     if (g_serialMode == S_ON)
+//       errorLog("Serial begin already exists", g_curStep);
+//     g_serialMode = S_ON;
+//   }
+//   if (event == S_SERIAL_END)
+//   {
+//     sprintf(eventText, "Serial.end");
+//     if (g_serialMode != S_ON)
+//       errorLog("Serial end without serial.begin", g_curStep);
+//     g_serialMode = S_OFF;
+//   }
+//   if (event == S_SERIAL_PRINT_INT)
+//   {
+//     sprintf(eventText, "Serial.print(int) %d", pin);
+//     //fprintf(f_serial, "%d SL [%d]\n", g_curStep, pin);
+//     if (g_serialMode != S_ON)
+//       errorLog("Serial print without serial.begin", g_curStep);
+//   }
+//   if (event == S_SERIAL_PRINT_INT_BASE)
+//   {
+//     sprintf(eventText, "Serial.print(int,base) %d base=%d", pin, value);
+//     //fprintf(f_serial, "%d SL [%d]\n", g_curStep, pin);
+//     if (g_serialMode != S_ON)
+//       errorLog("Serial print without serial.begin", g_curStep);
+//   }
+//   if (event == S_SERIAL_PRINT_CHAR)
+//   {
+//     sprintf(eventText, "Serial.print(char) %s", p);
+//     //fprintf(f_serial, "%d SL [%s]\n", g_curStep, p);
+//     if (g_serialMode != S_ON)
+//       errorLog("Serial print without serial.begin", g_curStep);
+//   }
+//   if (event == S_SERIAL_PRINT_UCHAR)
+//   {
+//     sprintf(eventText, "Serial.print(uchar) %c", uc);
+//     //fprintf(f_serial, "%d SL [%c]\n", g_curStep, uc);
+//     if (g_serialMode != S_ON)
+//       errorLog("Serial print without serial.begin", g_curStep);
+//   }
+//   if (event == S_SERIAL_PRINT_STRING)
+//   {
+//     sprintf(eventText, "Serial.print(string) %s", p);
+//     //fprintf(f_serial, "%d SL [%s]\n", g_curStep, p);
+//     if (g_serialMode != S_ON)
+//       errorLog("Serial print without serial.begin", g_curStep);
+//   }
+//   if (event == S_SERIAL_PRINT_SSTRING)
+//   {
+//     sprintf(eventText, "Serial.print(String) %s", p);
+//     //fprintf(f_serial, "%d SL [%s]\n", g_curStep, p);
+//     if (g_serialMode != S_ON)
+//       errorLog("Serial print without serial.begin", g_curStep);
+//   }
+//   if (event == S_SERIAL_PRINTLN_INT)
+//   {
+//     sprintf(eventText, "Serial.println(int) %d", pin);
+//     //fprintf(f_serial, "%d NL [%d]\n", g_curStep, pin);
+//     if (g_serialMode != S_ON)
+//       errorLog("Serial print without serial.begin", g_curStep);
+//   }
+//   if (event == S_SERIAL_PRINTLN_INT_BASE)
+//   {
+//     sprintf(eventText, "Serial.println(int,base) %d base=%d", pin, value);
+//     //fprintf(f_serial, "%d NL [%d]\n", g_curStep, pin);
+//     if (g_serialMode != S_ON)
+//       errorLog("Serial print without serial.begin", g_curStep);
+//   }
+//   if (event == S_SERIAL_PRINTLN_CHAR)
+//   {
+//     sprintf(eventText, "Serial.println(char) %s", p);
+//     //fprintf(f_serial, "%d NL [%s]\n", g_curStep, p);
+//     if (g_serialMode != S_ON)
+//       errorLog("Serial print without serial.begin", g_curStep);
+//   }
+//   if (event == S_SERIAL_PRINTLN_UCHAR)
+//   {
+//     sprintf(eventText, "Serial.println(uchar) %c", uc);
+//     //fprintf(f_serial, "%d NL [%c]\n", g_curStep, *p);
+//     if (g_serialMode != S_ON)
+//       errorLog("Serial print without serial.begin", g_curStep);
+//   }
+//   if (event == S_SERIAL_PRINTLN_STRING)
+//   {
+//     sprintf(eventText, "Serial.println(string) %s", p);
+//     //fprintf(f_serial, "%d NL [%s]\n", g_curStep, p);
+//     if (g_serialMode != S_ON)
+//       errorLog("Serial print without serial.begin", g_curStep);
+//   }
+//   if (event == S_SERIAL_PRINTLN_SSTRING)
+//   {
+//     sprintf(eventText, "Serial.println(String) %s", p);
+//     //fprintf(f_serial, "%d NL [%s]\n", g_curStep, p);
+//     if (g_serialMode != S_ON)
+//       errorLog("Serial print without serial.begin", g_curStep);
+//   }
+//   if (event == S_SERIAL_PRINTLN_VOID)
+//   {
+//     sprintf(eventText, "Serial.println(void)");
+//     //fprintf(f_serial, "%d NL []\n", g_curStep);
+//     if (g_serialMode != S_ON)
+//       errorLog("Serial print without serial.begin", g_curStep);
+//   }
+//   if (event == S_SERIAL_WRITE)
+//   {
+//     sprintf(eventText, "Serial.write %s", p);
+//     if (g_serialMode != S_ON)
+//       errorLog("Serial print without serial.begin", g_curStep);
+//   }
 
-  if (event == S_EEPROM_WRITE)
-  {
-    sprintf(eventText, "EEPROM.write address=%d value=%d", pin, value);
-    if (pin > 512)
-      errorLog("EEPROM write: address > 512: ", pin);
-    if (pin < 0)
-      errorLog("EEPROM write: address < 0: ", pin);
-    if (value > 255)
-      errorLog("EEPROM write: value > 255: ", value);
-    if (value < 0)
-      errorLog("EEPROM write: value < 0: ", value);
-    res = 0;
-  }
-  if (event == S_EEPROM_READ)
-  {
-    sprintf(eventText, "EEPROM.read address=%d value=%d", pin, value);
-    if (pin > 512)
-      errorLog("EEPROM read: address > 512: ", pin);
-    if (pin < 0)
-      errorLog("EEPROM read: address < 0: ", pin);
-    if (value > 255)
-      errorLog("EEPROM read: value > 255: ", value);
-    if (value < 0)
-      errorLog("EEPROM read: value < 0: ", value);
-    res = 0;
-  }
+//   if (event == S_EEPROM_WRITE)
+//   {
+//     sprintf(eventText, "EEPROM.write address=%d value=%d", pin, value);
+//     if (pin > 512)
+//       errorLog("EEPROM write: address > 512: ", pin);
+//     if (pin < 0)
+//       errorLog("EEPROM write: address < 0: ", pin);
+//     if (value > 255)
+//       errorLog("EEPROM write: value > 255: ", value);
+//     if (value < 0)
+//       errorLog("EEPROM write: value < 0: ", value);
+//     res = 0;
+//   }
+//   if (event == S_EEPROM_READ)
+//   {
+//     sprintf(eventText, "EEPROM.read address=%d value=%d", pin, value);
+//     if (pin > 512)
+//       errorLog("EEPROM read: address > 512: ", pin);
+//     if (pin < 0)
+//       errorLog("EEPROM read: address < 0: ", pin);
+//     if (value > 255)
+//       errorLog("EEPROM read: value > 255: ", value);
+//     if (value < 0)
+//       errorLog("EEPROM read: value < 0: ", value);
+//     res = 0;
+//   }
 
-  cout << eventText << ", " <<  g_curStep << ", " << g_simulationLength << ", " << micros_elapsed << endl;
-  //logEvent(eventText);
-  //logCust(custText);
-  //writeStatus();
+//   cout << eventText << ", " <<  g_curStep << ", " << g_simulationLength << ", " << micros_elapsed << endl;
+//   //logEvent(eventText);
+//   //logCust(custText);
+//   //writeStatus();
 
-  //if (g_curStep == g_simulationLength) stopEncoding();
+//   //if (g_curStep == g_simulationLength) stopEncoding();
 
-  if (g_doInterrupt == S_YES && g_ongoingInterrupt == S_NO)interruptNow();
+//   if (g_doInterrupt == S_YES && g_ongoingInterrupt == S_NO)interruptNow();
 
-  return (res);
-}
+//   return (res);
+// }
 //====================================
 void writeRegister(int digital, int reg, int port, int value)
 //====================================

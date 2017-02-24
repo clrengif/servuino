@@ -162,20 +162,18 @@ void runEncoding(int n)
 
 
   g_curStep = 0;
-  servuinoFunc(S_SETUP, 0, 0, NULL, 0);
   setup();
   increment_counter(1032);
 
   while(running) {
     g_curLoop++;
-    servuinoFunc(S_LOOP, g_curLoop, 0, NULL, 0);
     loop();
   }
 }
 
 
 //=======================R=============
-int main(int argc, char *argv[])
+int run_servuino()
 //====================================
 {
   int x, i;
@@ -187,49 +185,9 @@ int main(int argc, char *argv[])
 
   //boardInit();
   //readCustom(); // Get customized log text from sketch
-
-  if (argc == 1)
-  {
     g_simulationLength = default_sim_length;
     g_scenSource = 0;
     runEncoding(g_simulationLength);
-  }
-  if (argc == 3)
-  {
-    g_simulationLength = atoi(argv[1]);
-    g_scenSource = atoi(argv[2]);
-    runEncoding(g_simulationLength);
-
-  }
-  else if (argc == 8)
-  {
-    // steps, source, pintype, pinno, pinvalue, pinstep,action
-    g_simulationLength = atoi(argv[1]);
-    g_scenSource       =  atoi(argv[2]);
-    g_pinType          =  atoi(argv[3]);
-    g_pinNo            =  atoi(argv[4]);
-    g_pinValue         =  atoi(argv[5]);
-    g_pinStep          =  atoi(argv[6]);
-    g_action           =  atoi(argv[7]);
-
-
-    max_steps = g_simulationLength;
-
-    if (g_pinType == DIG)
-    {
-      if (g_action == S_ADD)   x = insDigitalPinValue(g_pinNo, g_pinStep, g_pinValue);
-      if (g_action == S_DELETE)x = delDigitalPinValue(g_pinNo, g_pinStep);
-    }
-    if (g_pinType == ANA)
-    {
-      if (g_action == S_ADD)   x = insAnalogPinValue(g_pinNo, g_pinStep, g_pinValue);
-      if (g_action == S_DELETE)x = delAnalogPinValue(g_pinNo, g_pinStep);
-    }
-    runEncoding(g_simulationLength);
-  }
-  else
-    errorLog("Servuino not executed", 0);
-
   return EXIT_SUCCESS;
 }
 

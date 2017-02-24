@@ -15,14 +15,13 @@ int eeprom::read(int address)
 {
   
   if(address > 0 && address < 512)value = eepromStorage[address];
-  servuinoFunc(S_EEPROM_READ,address,value,NULL,0);
+  msg("doing EEPROM read");
   return(value);
 }
 void eeprom::write(int address, int value) 
 {
   if(address > 0 && address < 512 && value >= 0 && value < 256)eepromStorage[address] = value;
-  servuinoFunc(S_EEPROM_WRITE,address,value,NULL,0);
-  return;
+  msg("doing EEPROM write");
 }
 
 

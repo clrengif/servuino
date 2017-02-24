@@ -59,68 +59,68 @@ const byte LED_PIN     = 13;
 //==========================================
 int esplora::readSlider() {
   cout << "called Esplora.readSlider()" << endl;
-  increment_counter(128); // 128.2
+//  increment_counter(128); // 128.2
   return 0;
 }
 
 int esplora::readLightSensor() {
-  increment_counter(128); // 128.2
+//  increment_counter(128); // 128.2
   cout << "called Esplora.readLightSensor()" << endl;
   return 0;
 
 }
 
 int esplora::readTemperature(byte scale) {
-  increment_counter(128); // 128.2
+//  increment_counter(128); // 128.2
   cout << "called Esplora.readTemperature()" << endl;
   return 0;
 
 }
 
 int esplora::readMicrophone() {
-  increment_counter(128); // 128.2 us
+//  increment_counter(128); // 128.2 us
   cout << "called Esplora.readMicrophone()" << endl;
   return 0;
 
 }
 
 int esplora::readJoystickSwitch() {
-  increment_counter(30); // takes 30.2 us
+//  increment_counter(30); // takes 30.2 us
   cout << "called Esplora.readJoystickSwitch()" << endl;
   return 0;
 
 }
 
 int esplora::readJoystickButton() {
-  increment_counter(32); // 31.9 us
+//  increment_counter(32); // 31.9 us
   cout << "called Esplora.readJoystickButton()" << endl;
   return 0;
 
 }
 
 int esplora::readAccelerometer(byte axis) {
-  increment_counter(112); // 112.1
+//  increment_counter(112); // 112.1
   cout << "called Esplora.readAccelerometer()" << endl;
   return 0;
 
 }
 
 int esplora::readButton(byte button) {
-  increment_counter(136); // 136.01 us
+//  increment_counter(136); // 136.01 us
   cout << "called Esplora.readButton()" << endl;
   return 0;
 
 }
 
 int esplora::readJoystickX() {
-  increment_counter(128);
+//  increment_counter(128);
   cout << "called Esplora.readJoystickX()" << endl;
   return 0;
 
 }
 
 int esplora::readJoystickY() {
-  increment_counter(128);
+//  increment_counter(128);
   cout << "called Esplora.readJoystickY()" << endl;
   return 0;
 
@@ -134,60 +134,60 @@ void esplora::writeRGB(byte red, byte green, byte blue) {
 }
 
 void esplora::writeRed(byte red) {
-  increment_counter(1);
+//  increment_counter(1);
   cout << "called Esplora.writeRed()" << endl;
   lastRed = red;
 
 }
 
 void esplora::writeGreen(byte green) {
-  increment_counter(1);
+//  increment_counter(1);
   cout << "called Esplora.writeGreen()" << endl;
   lastGreen = green;
 
 }
 
 void esplora::writeBlue(byte blue) {
-  increment_counter(1);
+//  increment_counter(1);
   cout << "called Esplora.writeBlue()" << endl;
   lastBlue = blue;
 }
 
 byte esplora::readRed() {
-  increment_counter(0);
+//  increment_counter(0);
   cout << "called Esplora.readRed()" << endl;
   return lastRed;
 
 }
 
 byte esplora::readGreen() {
-  increment_counter(0);
+//  increment_counter(0);
   cout << "called Esplora.readGreen()" << endl;
   return lastGreen;
 
 }
 
 byte esplora::readBlue() {
-  increment_counter(0);
+//  increment_counter(0);
   cout << "called Esplora.readBlue()" << endl;
   return lastBlue;
 
 }
 
 void esplora::noTone() {
-  increment_counter(5);
+//  increment_counter(5);
   cout << "called Esplora.noTone()" << endl;
 
 }
 
 void esplora::tone(unsigned int freq) {
-  increment_counter(7);
+//  increment_counter(7);
   cout << "called Esplora.tone()" << endl;
 
 }
 
 void esplora::tone(unsigned int freq, unsigned long duration) {
-  increment_counter(7);
+//  increment_counter(7);
   cout << "called Esplora.tone(freq, dur)" << endl;
 
 }

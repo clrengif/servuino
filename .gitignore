@@ -1,2 +1,6 @@
 servunio
 *.swp
+*.o
+epoll_sim
+___client_events
+___device_updates

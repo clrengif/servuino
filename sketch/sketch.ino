@@ -16,4 +16,6 @@ void setup() {
 void loop() {
   Esplora.writeRGB(255, 0, 0);
   delay(1000);
+  Esplora.writeRGB(0, 0, 0);
+  delay(1000);
 }

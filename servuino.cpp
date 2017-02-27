@@ -25,9 +25,12 @@
 using namespace std;
 #include "common.h"
 #include <mutex>
+#include "global_variables.h"
 
 //===================================
 // Simulator status
+int x_pinValue[MAX_TOTAL_PINS];
+int x_leds[25] = {0};
 int x_pinMode[MAX_TOTAL_PINS];
 int x_pinScenario[MAX_TOTAL_PINS][SCEN_MAX];
 int x_pinDigValue[MAX_TOTAL_PINS];
@@ -103,7 +106,7 @@ int   pinAtReadA[MAX_READ];
 int   paceMaker = 0;
 int   baud = 0;
 int   error = 0;
-int   logging = S_YES;
+int   logging = S_NO;
 int   serialSize = 1;
 int   serialMode = S_OFF;
 int   scenAnalog    = 0;

@@ -14,9 +14,12 @@
 #include <chrono>
 #include <cstdarg>
 #include <string>
+#include <array>
+#include <algorithm>
 using namespace std;
 using namespace literals::string_literals;
 #include "servuino.cpp"
+#include "global_variables.h"
 
 
 extern "C" {
@@ -24,7 +27,8 @@ extern "C" {
 #include "json.h"
 }
 
-mutex write_update;
+mutex m_pins;
+mutex m_leds;
 mutex m_suspend;
 mutex m_screen;
 mutex m_code;
@@ -53,24 +57,24 @@ min(int a, int b)
   return (a < b ? a : b);
 }
 
+int ttick = 0;
 // timing --
 // TODO: Actually handle timing.
 int
 get_macro_ticks() {
-  return 100;
+  ttick++;
+  return ttick;
 }
 
 // Write to the output pipe
 void
 write_to_updates(const void* buf, size_t count, bool should_suspend = false) {
-  write_update.lock();
   if (should_suspend && fast_mode) {
     m_suspend.lock();
     suspend = true;
     m_suspend.unlock();
   }
   write(updates_fd, buf, count);
-  write_update.unlock();
 }
 
 
@@ -81,6 +85,81 @@ appendf(char** str, const char* end, const char* format, ...) {
   int n = vsnprintf(*str, end - *str, format, args);
   va_end(args);
   *str += min(end - *str, n);
+}
+
+
+// Generate json string from a list of ints.
+// {1,2,3} --> '"<field>:" [1,2,3]'
+void
+list_to_json(const char* field, char** json_ptr, char* json_end, int* values, size_t len) {
+  if (len == 0) {
+    appendf(json_ptr, json_end, "\"%s\": []", field);
+  } else {
+    appendf(json_ptr, json_end, "\"%s\": [", field);
+
+    for (int i = 0; i < len; ++i) {
+      appendf(json_ptr, json_end, "%d,", values[i]);
+    }
+
+    // Replace trailing comma with ']'.
+    *(*json_ptr - 1) = ']';
+  }
+}
+
+
+void send_pin_update() {
+  static int prev_pins[MAX_TOTAL_PINS] = {0};
+  int pwm_dutycycle[MAX_TOTAL_PINS] = {0};
+  int pwm_period[MAX_TOTAL_PINS] = {0};
+  m_pins.lock();
+
+  if (memcmp(x_pinValue, prev_pins, sizeof(prev_pins)) != 0) {
+    // pin states have changed
+    char json[1024];
+    char* json_ptr = json;
+    char* json_end = json + sizeof(json);
+    appendf(&json_ptr, json_end, "[{ \"type\": \"microbit_pins\", \"ticks\": %d, \"data\": {",
+            get_macro_ticks());
+
+    list_to_json("p", &json_ptr, json_end, x_pinValue, sizeof(x_pinValue) / sizeof(int));
+
+    appendf(&json_ptr, json_end, ", ");
+    list_to_json("pwmd", &json_ptr, json_end, pwm_dutycycle,
+                 sizeof(pwm_dutycycle) / sizeof(int));
+
+    appendf(&json_ptr, json_end, ", ");
+    list_to_json("pwmp", &json_ptr, json_end, pwm_period, sizeof(pwm_period) / sizeof(int));
+
+    appendf(&json_ptr, json_end, "}}]\n");
+
+    write_to_updates(json, json_ptr - json, true);
+    cout << "pins updates, writing json update" << endl;
+
+    memcpy(prev_pins, x_pinValue, sizeof(x_pinValue));
+  }
+  m_pins.unlock();
+}
+
+void
+send_led_update() {
+  static int prev_leds[25] = {0};
+  m_leds.lock();
+  if (memcmp(x_leds, prev_leds, sizeof(x_leds)) != 0) {
+    char json[1024];
+    char* json_ptr = json;
+    char* json_end = json + sizeof(json);
+    appendf(&json_ptr, json_end, "[{ \"type\": \"microbit_leds\", \"ticks\": %d, \"data\": {",
+            get_macro_ticks());
+
+    list_to_json("b", &json_ptr, json_end, x_leds, sizeof(x_leds) / sizeof(int));
+
+    appendf(&json_ptr, json_end, "}}]\n");
+
+    write_to_updates(json, json_ptr - json, true);
+    cout << "leds updates, writing json update" << endl;
+    memcpy(prev_leds, x_leds, sizeof(x_leds));
+  }
+  m_leds.unlock();
 }
 
 // Write ack to say we received the data.
@@ -108,23 +187,42 @@ process_client_button(const json_value* data) {
     fprintf(stderr, "Button event missing id and/or state\n");
     return;
   }
-  m_code.lock();
+  int switch_num = id->as.number;
 
-  m_code.unlock();
+  m_pins.lock();
+  // 1 is pushed down, which is 0 on the esplora
+  x_pinValue[switch_num] = (state->as.number == 0) ? 1 : 0;
+  m_pins.unlock();
+  write_event_ack("microbit_button", nullptr);
 }
 
-// Process a button event
+// Process a temperature event
 void
 process_client_temperature(const json_value* data) {
+
+
+
 }
 
-// Process a button event
+// Process a slider event
+void
+process_client_slider(const json_value* data) {
+  const json_value* s = json_value_get(data, "s");
+  if (!s || s->type != JSON_VALUE_TYPE_NUMBER) {
+    fprintf(stderr, "Slider event missing s\n");
+    return;
+  }
+  m_pins.lock();
+  x_pinValue[SIM_SLIDER] = s->as.number;
+  m_pins.unlock();
+  char ack_json[1024];
+  snprintf(ack_json, sizeof(ack_json), "{\"s\": %d", static_cast<int32_t>(s->as.number));
+  write_event_ack("slider", ack_json);
+}
+
+// Process a accelerometer event
 void
 process_client_accel(const json_value* data) {
-}
-
-void
-process_client_magnet(const json_value* data) {
 
 }
 
@@ -177,6 +275,9 @@ process_client_json(const json_value* json) {
       } else if (strncmp(event_type->as.string, "microbit_pin", 13) == 0) {
         // Something driving the GPIO pins.
         process_client_pins(event_data);
+      } else if (strncmp(event_type->as.string, "slider", 13) == 0) {
+        // Something driving the GPIO pins.
+        process_client_slider(event_data);
       } else if (strncmp(event_type->as.string, "random", 13) == 0) {
         // Injected random data (from the marker only).
         process_client_random(event_data);
@@ -219,12 +320,32 @@ process_client_event(int fd) {
 
     line_start = line_end + 1;
   }
-  cout << "processed event " << buf << endl;
 
-  write_event_ack("arduino_event", nullptr);
+  write_event_ack("microbit_event", nullptr);
 }
 
-void setup_output_pipe() {
+// Sets the default state of the Esplora pins
+// Everything is 0 except for the switches, which
+// are all active low.
+// TODO: set default state of slider, possibly sending
+// a slider event on startup based on it's position.
+void
+set_esplora_state() {
+  int i;
+  m_pins.lock();
+  for (i = 0; i < MAX_TOTAL_PINS; i++)
+    x_pinValue[i] = 0;
+  // set switches to be high (active low)
+  for (i = 1; i < 5; i++)
+    x_pinValue[i] = HIGH;
+  x_pinValue[SIM_JOYSTICK_SW] = 1023;
+  m_pins.unlock();
+  send_pin_update();
+}
+
+
+void
+setup_output_pipe() {
   // Open the events pipe.
   char* updates_pipe_str = getenv("GROK_UPDATES_PIPE");
   if (updates_pipe_str != NULL) {
@@ -235,15 +356,14 @@ void setup_output_pipe() {
 
 }
 
-void code_thread_main() {
+void
+code_thread_main() {
   run_servuino();
-
 }
 
 
 void
 main_thread() {
-  cout << "in main_thread" << endl;
   const int MAX_EVENTS = 10;
   int epoll_fd = epoll_create1(0);
 
@@ -260,7 +380,6 @@ main_thread() {
   int notify_fd = -1;
   int client_wd = -1;
   if (client_pipe_str != NULL) {
-    cout << "found GROK_CLIENT_PIPE" << endl;
     client_fd = atoi(client_pipe_str);
     fcntl(client_fd, F_SETFL, fcntl(client_fd, F_GETFL, 0) | O_NONBLOCK);
     struct epoll_event ev_client_pipe;
@@ -336,6 +455,7 @@ main_thread() {
 int
 main(int argc, char** argv) {
   setup_output_pipe();
+  set_esplora_state();
   thread code_thread(code_thread_main);  // run the code
   //future<void> result(async(code_thread_main));
   main_thread();                    // start reading client data

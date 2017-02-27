@@ -14,7 +14,10 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-
+#include <algorithm>
+#include <array>
+#include <chrono>
+#include "global_variables.h"
 
 //=====================================
 // Functions
@@ -29,7 +32,7 @@ void pinMode(int pin, int mode)
     cout << "doing input pinmode" << endl;
   if (mode == OUTPUT)
     cout << "doing output pinmode" << endl;
-  
+
 }
 void digitalWrite(int pin, int value)
 {
@@ -38,27 +41,27 @@ void digitalWrite(int pin, int value)
     cout << "doing digitalWrite low" << endl;
   if (value == 1)
     cout << "doing digitalWrite high" << endl;
-  
+
 }
 int digitalRead(int pin)
 {
 //  increment_counter(20);
-    cout << "doing digitalRead" << endl;
-    return -9;
+  cout << "doing digitalRead" << endl;
+  return -9;
 }
 
 void analogWrite(int pin, int value) //PWM
 {
 //  increment_counter(20);
-    cout << "doing analogWrite" << endl;
-  
+  cout << "doing analogWrite" << endl;
+
 }
 
 int analogRead(int pin)
 {
 //  increment_counter(20);
   pin = g_nDigPins + pin;
-    cout << "doing analogRead" << endl;
+  cout << "doing analogRead" << endl;
   return 0;
 }
 
@@ -110,16 +113,19 @@ unsigned long micros()
   return (g_curStep * 100000);
 }
 
-void delay(int ms)
+void delay(uint32_t ms)
 {
-//  increment_counter(ms*1000);
-  
+  increment_counter(ms*1000);
+  if (!fast_mode)
+    this_thread::sleep_for(chrono::milliseconds(ms));
 }
 
-void delayMicroseconds(int us)
+void delayMicroseconds(uint32_t us)
 {
-//  increment_counter(us);
-  
+  increment_counter(us);
+  if (!fast_mode)
+    this_thread::sleep_for(chrono::microseconds(us));
+
 }
 
 //------ Math ------------------------------
@@ -232,7 +238,7 @@ void bitWrite(unsigned int *x, int n, int b)
   //printf("bitWrite: %d %d %d PORTB=%d\n",*x,n,b,PORTB);
   if (b == 0)bitClear(x, n);
   if (b == 1)bitSet(x, n);
-  
+
 }
 
 int bit(int n)
@@ -283,7 +289,7 @@ void attachInterrupt(int ir, void(*func)(), int mode)
     errorLog("attachInterruptERROR", ir);
   }
 
-  
+
 }
 
 
@@ -304,7 +310,7 @@ void detachInterrupt(int ir)
     digitalMode[pin]  = INPUT;
   }
 
-  
+
 }
 //------ Interrupts ------------------------
 void interrupts()
@@ -323,7 +329,7 @@ void serial::begin(int baudRate)
   digitalMode[0] = RX;
   digitalMode[1] = TX;
 
-  
+
 }
 
 void serial::end()
@@ -331,7 +337,7 @@ void serial::end()
   digitalMode[0] = FREE;
   digitalMode[1] = FREE;
 
-  
+
 }
 
 int serial::available()  // returns the number of bytes available to read
@@ -360,38 +366,38 @@ void serial::flush()
 void serial::print(int x)
 {
 //  increment_counter(100);
-  
+
 }
 
 void serial::print(int x, int base)
 {
 //  increment_counter(16);
-  
+
 }
 
 void serial::print(const char *p)
 {
 //  increment_counter(100);
-  
+
 }
 
 void serial::print(unsigned char uc)
 {
 //  increment_counter(100);
-  
+
 }
 
 
 void serial::println(int x)
 {
 //  increment_counter(100);
-  
+
 }
 
 void serial::println(const char *p)
 {
 //  increment_counter(100);
-  
+
 }
 
 void serial::println(string s)
@@ -399,7 +405,7 @@ void serial::println(string s)
 //  increment_counter(100);
   const char *p;
   p = s.c_str();
-  
+
 }
 
 void serial::println(String s)
@@ -407,7 +413,7 @@ void serial::println(String s)
 //  increment_counter(100);
   const char *p;
   p = s.getPointer();
-  
+
 }
 void serial::println()
 {
@@ -744,7 +750,7 @@ void String::getBytes( int buf[], int *len )
     p++;
   }
   *len = lngth;
-  
+
 }
 
 int String::indexOf(char val)
@@ -810,7 +816,7 @@ String String::replace(String sub1, String sub2)
 void String::setCharAt( int index, char c )
 {
   // Not implemented
-  
+
 }
 
 bool String::startsWith( String s )
@@ -837,25 +843,25 @@ String String::substring(int from, int to)
 void String::toCharArray(char buf[], int *len)
 {
   // Not implemented
-  
+
 }
 
 void String::toLowerCase()
 {
   // Not implemented
-  
+
 }
 
 void String::toUpperCase()
 {
   // Not implemented
-  
+
 }
 
 void String::trim()
 {
   // Not implemented
-  
+
 }
 
 char* String::getPointer()

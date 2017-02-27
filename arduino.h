@@ -71,7 +71,8 @@ typedef bool boolean;
 // Functions
 int   bitRead(int x, int n);
 void  bitSet(unsigned int *x, int n);
-
+void send_pin_update();
+void send_led_update();
 
 unsigned int PORTA=0,PORTB=0,PORTC=0,PORTD=0,PORTE=0,PORTF=0,PORTG=0;
 unsigned int PORTH=0,PORTJ=0,PORTK=0,PORTL=0,PORTM=0,PORTN=0;

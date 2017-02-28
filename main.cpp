@@ -194,18 +194,41 @@ process_client_button(const json_value* data) {
   int val = (state->as.number == 0) ? 1 : 0;
 
   m_pins.lock();
-  x_pinValue[switch_num+1] = val;
+  x_pinValue[switch_num+1] = val; // offset of 1 for microbit_sim
   m_pins.unlock();
   write_event_ack("microbit_button", nullptr);
-  cout << "set " << switch_num << " to be: " << val << endl;
 }
 
 // Process a temperature event
 void
 process_client_temperature(const json_value* data) {
+  const json_value* t = json_value_get(data, "t");
+  if (!t || t->type != JSON_VALUE_TYPE_NUMBER) {
+    fprintf(stderr, "Slider event missing t\n");
+    return;
+  }
+  m_pins.lock();
+  x_pinValue[SIM_TEMPERATURE] = t->as.number;
+  m_pins.unlock();
+  char ack_json[1024];
+  snprintf(ack_json, sizeof(ack_json), "{\"t\": %d", static_cast<int32_t>(t->as.number));
+  write_event_ack("temperature", ack_json);
+}
 
-
-
+// Process a temperature event
+void
+process_client_light(const json_value* data) {
+  const json_value* l = json_value_get(data, "l");
+  if (!l || l->type != JSON_VALUE_TYPE_NUMBER) {
+    fprintf(stderr, "Light event missing l\n");
+    return;
+  }
+  m_pins.lock();
+  x_pinValue[SIM_LIGHT] = l->as.number;
+  m_pins.unlock();
+  char ack_json[1024];
+  snprintf(ack_json, sizeof(ack_json), "{\"l\": %d", static_cast<int32_t>(l->as.number));
+  write_event_ack("light", ack_json);
 }
 
 // Process a slider event
@@ -224,6 +247,23 @@ process_client_slider(const json_value* data) {
   write_event_ack("slider", ack_json);
 }
 
+
+// Process a slider event
+void
+process_client_microphone(const json_value* data) {
+  const json_value* m = json_value_get(data, "m");
+  if (!m || m->type != JSON_VALUE_TYPE_NUMBER) {
+    fprintf(stderr, "Microphone event missing m\n");
+    return;
+  }
+  m_pins.lock();
+  x_pinValue[SIM_MICROPHONE] = m->as.number;
+  m_pins.unlock();
+  char ack_json[1024];
+  snprintf(ack_json, sizeof(ack_json), "{\"m\": %d", static_cast<int32_t>(m->as.number));
+  write_event_ack("microphone", ack_json);
+}
+
 // Process a accelerometer event
 void
 process_client_accel(const json_value* data) {
@@ -232,12 +272,25 @@ process_client_accel(const json_value* data) {
 
 void
 process_client_pins(const json_value* data) {
-
+  const json_value* id = json_value_get(data, "id");
+  const json_value* state = json_value_get(data, "state");
+  if (!id || !state || id->type != JSON_VALUE_TYPE_NUMBER ||
+      state->type != JSON_VALUE_TYPE_NUMBER) {
+    fprintf(stderr, "Button event missing id and/or state\n");
+    return;
+  }
+  int pin_num = id->as.number;
+  int val = state->as.number;
+  m_pins.lock();
+  x_pinValue[pin_num] = val; 
+  m_pins.unlock();
+  write_event_ack("microbit_pin", nullptr);
 }
 
 
 void
 process_client_random(const json_value* data) {
+  // TODO
 
 }
 
@@ -279,6 +332,12 @@ process_client_json(const json_value* json) {
       } else if (strncmp(event_type->as.string, "microbit_pin", 13) == 0) {
         // Something driving the GPIO pins.
         process_client_pins(event_data);
+      } else if (strncmp(event_type->as.string, "light", 13) == 0) {
+        // Light event
+        process_client_light(event_data);
+      } else if (strncmp(event_type->as.string, "microphone", 13) == 0) {
+        // Light event
+        process_client_microphone(event_data);
       } else if (strncmp(event_type->as.string, "slider", 13) == 0) {
         // Something driving the GPIO pins.
         process_client_slider(event_data);

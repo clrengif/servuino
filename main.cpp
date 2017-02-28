@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <signal.h>
 #include <unistd.h>
 #include <string.h>
 #include <fcntl.h>
@@ -17,7 +18,6 @@
 #include <array>
 #include <algorithm>
 using namespace std;
-using namespace literals::string_literals;
 #include "servuino.cpp"
 #include "global_variables.h"
 
@@ -57,13 +57,14 @@ min(int a, int b)
   return (a < b ? a : b);
 }
 
-int ttick = 0;
 // timing --
 // TODO: Actually handle timing.
-int
+uint64_t
 get_macro_ticks() {
-  ttick++;
-  return ttick;
+  elapsed.lock();
+  uint64_t e = micros_elapsed;
+  elapsed.unlock();
+  return e;
 }
 
 // Write to the output pipe
@@ -109,11 +110,14 @@ list_to_json(const char* field, char** json_ptr, char* json_end, int* values, si
 
 void send_pin_update() {
   static int prev_pins[MAX_TOTAL_PINS] = {0};
+  static int pins[MAX_TOTAL_PINS] = {0};
   int pwm_dutycycle[MAX_TOTAL_PINS] = {0};
   int pwm_period[MAX_TOTAL_PINS] = {0};
   m_pins.lock();
+  memcpy(pins, x_pinValue, sizeof(x_pinValue));
+  m_pins.unlock();
 
-  if (memcmp(x_pinValue, prev_pins, sizeof(prev_pins)) != 0) {
+  if (memcmp(pins, prev_pins, sizeof(prev_pins)) != 0) {
     // pin states have changed
     char json[1024];
     char* json_ptr = json;
@@ -121,7 +125,7 @@ void send_pin_update() {
     appendf(&json_ptr, json_end, "[{ \"type\": \"microbit_pins\", \"ticks\": %d, \"data\": {",
             get_macro_ticks());
 
-    list_to_json("p", &json_ptr, json_end, x_pinValue, sizeof(x_pinValue) / sizeof(int));
+    list_to_json("p", &json_ptr, json_end, pins, sizeof(pins) / sizeof(int));
 
     appendf(&json_ptr, json_end, ", ");
     list_to_json("pwmd", &json_ptr, json_end, pwm_dutycycle,
@@ -133,17 +137,18 @@ void send_pin_update() {
     appendf(&json_ptr, json_end, "}}]\n");
 
     write_to_updates(json, json_ptr - json, true);
-    cout << "pins updates, writing json update" << endl;
 
-    memcpy(prev_pins, x_pinValue, sizeof(x_pinValue));
+    memcpy(prev_pins, pins, sizeof(pins));
   }
-  m_pins.unlock();
 }
 
 void
 send_led_update() {
   static int prev_leds[25] = {0};
+  static int leds[25] = {0};
   m_leds.lock();
+  memcpy(leds, x_leds, sizeof(x_leds));
+  m_leds.unlock();
   if (memcmp(x_leds, prev_leds, sizeof(x_leds)) != 0) {
     char json[1024];
     char* json_ptr = json;
@@ -156,10 +161,8 @@ send_led_update() {
     appendf(&json_ptr, json_end, "}}]\n");
 
     write_to_updates(json, json_ptr - json, true);
-    cout << "leds updates, writing json update" << endl;
     memcpy(prev_leds, x_leds, sizeof(x_leds));
   }
-  m_leds.unlock();
 }
 
 // Write ack to say we received the data.
@@ -188,12 +191,13 @@ process_client_button(const json_value* data) {
     return;
   }
   int switch_num = id->as.number;
+  int val = (state->as.number == 0) ? 1 : 0;
 
   m_pins.lock();
-  // 1 is pushed down, which is 0 on the esplora
-  x_pinValue[switch_num] = (state->as.number == 0) ? 1 : 0;
+  x_pinValue[switch_num+1] = val;
   m_pins.unlock();
   write_event_ack("microbit_button", nullptr);
+  cout << "set " << switch_num << " to be: " << val << endl;
 }
 
 // Process a temperature event
@@ -357,9 +361,22 @@ setup_output_pipe() {
 }
 
 void
+sig_handler(int s) {
+  cout << "Caught signal " << s << endl;
+  exit(1);
+}
+
+void
 code_thread_main() {
+  // handle SIGINTs
+  struct sigaction handle_sigint;
+  handle_sigint.sa_handler = sig_handler;
+  sigemptyset(&handle_sigint.sa_mask);
+  handle_sigint.sa_flags = 0;
+  sigaction(SIGINT, &handle_sigint, NULL);
   run_servuino();
 }
+
 
 
 void
@@ -452,12 +469,21 @@ main_thread() {
   close(client_fd);
 }
 
+
 int
 main(int argc, char** argv) {
+
+  // ignore sigints SIGINTs
+  struct sigaction handle_sigint;
+  handle_sigint.sa_handler = SIG_IGN;
+  sigemptyset(&handle_sigint.sa_mask);
+  handle_sigint.sa_flags = 0;
+  sigaction(SIGINT, &handle_sigint, NULL);
+
   setup_output_pipe();
   set_esplora_state();
   thread code_thread(code_thread_main);  // run the code
-  //future<void> result(async(code_thread_main));
   main_thread();                    // start reading client data
   close(updates_fd);
+  return EXIT_SUCCESS;
 }

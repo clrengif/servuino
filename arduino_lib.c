@@ -15,8 +15,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include <algorithm>
-#include <array>
 #include <chrono>
+#include <cstdlib>
+#include <stdio.h>
+#include <stdlib.h>
 #include "global_variables.h"
 
 //=====================================
@@ -68,6 +70,7 @@ int analogRead(int pin)
 //------ Advanced I/O ----------------------
 void tone(int pin, unsigned int freq)
 {
+  cout << "called tone" << endl;
 }
 
 void tone(int pin, unsigned int freq, unsigned long duration)
@@ -76,6 +79,7 @@ void tone(int pin, unsigned int freq, unsigned long duration)
 
 void noTone(int pin)
 {
+  cout << "called noTone" << endl;
 }
 
 void shiftOut(int dataPin, int clockPin, int bitOrder, int value)
@@ -115,7 +119,7 @@ unsigned long micros()
 
 void delay(uint32_t ms)
 {
-  increment_counter(ms*1000);
+  increment_counter(ms * 1000);
   if (!fast_mode)
     this_thread::sleep_for(chrono::milliseconds(ms));
 }
@@ -328,15 +332,12 @@ void serial::begin(int baudRate)
 {
   digitalMode[0] = RX;
   digitalMode[1] = TX;
-
-
 }
 
 void serial::end()
 {
   digitalMode[0] = FREE;
   digitalMode[1] = FREE;
-
 
 }
 
@@ -366,24 +367,52 @@ void serial::flush()
 void serial::print(int x)
 {
 //  increment_counter(100);
+  cout << x;
 
+}
+
+void print_binary(int number)
+{
+  if (number) {
+    print_binary(number >> 1);
+    putc((number & 1) ? '1' : '0', stdout);
+  }
 }
 
 void serial::print(int x, int base)
 {
 //  increment_counter(16);
-
+  char buf[20];
+  switch (base) {
+  case BIN:
+    print_binary(x);
+    break;
+  case OCT:
+    sprintf(buf, "%o", x);
+    cout << buf;
+    break;
+  case DEC:
+    sprintf(buf, "%d", x);
+    cout << buf;
+    break;
+  case HEX:
+    sprintf(buf, "%x", x);
+    cout << buf;
+    break;
+  }
 }
 
 void serial::print(const char *p)
 {
-//  increment_counter(100);
+  increment_counter(100);
+  cout << p;
 
 }
 
 void serial::print(unsigned char uc)
 {
 //  increment_counter(100);
+  cout << uc;
 
 }
 
@@ -391,12 +420,14 @@ void serial::print(unsigned char uc)
 void serial::println(int x)
 {
 //  increment_counter(100);
+  cout << x << endl;
 
 }
 
 void serial::println(const char *p)
 {
 //  increment_counter(100);
+  cout << p << endl;
 
 }
 
@@ -405,6 +436,7 @@ void serial::println(string s)
 //  increment_counter(100);
   const char *p;
   p = s.c_str();
+  cout << p << endl;
 
 }
 
@@ -413,21 +445,25 @@ void serial::println(String s)
 //  increment_counter(100);
   const char *p;
   p = s.getPointer();
+  cout << p << endl;
 
 }
 void serial::println()
 {
 //  increment_counter(100);
+  cout << endl;
 }
 
 void serial::println(unsigned char uc)
 {
 //  increment_counter(100);
+  cout << uc << endl;
 }
 
 void serial::write(char *p)
 {
 //  increment_counter(100);
+  cout << p;
 }
 
 

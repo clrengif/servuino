@@ -87,11 +87,11 @@
 
 #define INTERRUPT 3
 
-#define BYTE   1
+#define BYTE   0
 #define BIN    2
-#define OCT    3
-#define DEC    4
-#define HEX    5
+#define OCT    8
+#define DEC    10
+#define HEX    16
 
 
 #define S_ADD 10
@@ -130,11 +130,6 @@
 #define SIZE_ROW 280
 
 // Misc =======================
-#define BYTE   1
-#define BIN    2
-#define OCT    3
-#define DEC    4
-#define HEX    5
 
 #define T_READ  1
 #define T_WRITE 2

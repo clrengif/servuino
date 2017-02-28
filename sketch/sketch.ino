@@ -1,4 +1,3 @@
-#include <Esplora.h>
 /*
   Blink
   Turns on an LED on for one second, then off for one second, repeatedly.
@@ -14,8 +13,10 @@ void setup() {
 
 // the loop routine runs over and over again forever:
 void loop() {
-  Esplora.writeRGB(255, 0, 0);
-  delay(1000);
-  Esplora.writeRGB(0, 0, 0);
-  delay(1000);
+  if(Esplora.readButton(1) == LOW) 
+    Esplora.writeRGB(255, 0, 0);
+  else if (Esplora.readButton(2) == LOW)
+    Esplora.writeRGB(0, 255, 0);
+  else
+    Esplora.writeRGB(0, 0, 0);
 }

@@ -1,6 +1,6 @@
 make:
 	clang -I./inc/json -O1 json/*.c -c
-	clang++ -I./inc/json -I./inc -std=c++14 -O1 main.cpp -c 
+	clang++ -I./inc/json -I./inc -std=c++11 -O1 main.cpp -c 
 	clang++ *.o -o arduino_sim -lpthread 
 
 clean:

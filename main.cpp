@@ -194,7 +194,7 @@ process_client_button(const json_value* data) {
   int val = (state->as.number == 0) ? 1 : 0;
 
   m_pins.lock();
-  x_pinValue[switch_num+1] = val; // offset of 1 for microbit_sim
+  x_pinValue[switch_num + 1] = val; // offset of 1 for microbit_sim
   m_pins.unlock();
   write_event_ack("microbit_button", nullptr);
 }
@@ -251,23 +251,67 @@ process_client_slider(const json_value* data) {
 // Process a slider event
 void
 process_client_microphone(const json_value* data) {
-  const json_value* m = json_value_get(data, "m");
-  if (!m || m->type != JSON_VALUE_TYPE_NUMBER) {
-    fprintf(stderr, "Microphone event missing m\n");
+  const json_value* mic = json_value_get(data, "mic");
+  if (!mic || mic->type != JSON_VALUE_TYPE_NUMBER) {
+    fprintf(stderr, "Microphone event missing mic\n");
     return;
   }
   m_pins.lock();
-  x_pinValue[SIM_MICROPHONE] = m->as.number;
+  x_pinValue[SIM_MIC] = mic->as.number;
   m_pins.unlock();
   char ack_json[1024];
-  snprintf(ack_json, sizeof(ack_json), "{\"m\": %d", static_cast<int32_t>(m->as.number));
-  write_event_ack("microphone", ack_json);
+  snprintf(ack_json, sizeof(ack_json), "{\"mic\": %d", static_cast<int32_t>(mic->as.number));
+  write_event_ack("mic", ack_json);
 }
 
 // Process a accelerometer event
 void
 process_client_accel(const json_value* data) {
+  const json_value* id = json_value_get(data, "id");
+  const json_value* state = json_value_get(data, "state");
+  if (!id || !state || id->type != JSON_VALUE_TYPE_NUMBER ||
+      state->type != JSON_VALUE_TYPE_NUMBER) {
+    fprintf(stderr, "Joystick event missing id and/or state\n");
+    return;
+  }
+  int pin_num = id->as.number;
+  int val = state->as.number;
+  m_pins.lock();
+  x_pinValue[pin_num] = val;
+  m_pins.unlock();
+  write_event_ack("accel", nullptr);
+}
 
+void
+process_client_joystick_sw(const json_value* data) {
+  const json_value* j_sw = json_value_get(data, "j_sw");
+  if (!j_sw || j_sw->type != JSON_VALUE_TYPE_NUMBER) {
+    fprintf(stderr, "Joystick switch event missing j_sw\n");
+    return;
+  }
+  m_pins.lock();
+  x_pinValue[SIM_JOYSTICK_SW] = (j_sw->as.number == 0) ? 1023 : 0;
+  m_pins.unlock();
+  char ack_json[1024];
+  snprintf(ack_json, sizeof(ack_json), "{\"j_sw\": %d", static_cast<int32_t>(j_sw->as.number));
+  write_event_ack("joystick_switch", ack_json);
+}
+
+void
+process_client_joystick(const json_value* data) {
+  const json_value* id = json_value_get(data, "id");
+  const json_value* state = json_value_get(data, "state");
+  if (!id || !state || id->type != JSON_VALUE_TYPE_NUMBER ||
+      state->type != JSON_VALUE_TYPE_NUMBER) {
+    fprintf(stderr, "Joystick event missing id and/or state\n");
+    return;
+  }
+  int pin_num = id->as.number;
+  int val = state->as.number;
+  m_pins.lock();
+  x_pinValue[pin_num] = val;
+  m_pins.unlock();
+  write_event_ack("joystick", nullptr);
 }
 
 void
@@ -282,7 +326,7 @@ process_client_pins(const json_value* data) {
   int pin_num = id->as.number;
   int val = state->as.number;
   m_pins.lock();
-  x_pinValue[pin_num] = val; 
+  x_pinValue[pin_num] = val;
   m_pins.unlock();
   write_event_ack("microbit_pin", nullptr);
 }
@@ -338,6 +382,12 @@ process_client_json(const json_value* json) {
       } else if (strncmp(event_type->as.string, "microphone", 13) == 0) {
         // Light event
         process_client_microphone(event_data);
+      } else if (strncmp(event_type->as.string, "joystick", 13) == 0) {
+        // Light event
+        process_client_joystick(event_data);
+      } else if (strncmp(event_type->as.string, "joystick_sw", 13) == 0) {
+        // Light event
+        process_client_joystick_sw(event_data);
       } else if (strncmp(event_type->as.string, "slider", 13) == 0) {
         // Something driving the GPIO pins.
         process_client_slider(event_data);

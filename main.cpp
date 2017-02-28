@@ -582,7 +582,7 @@ main_thread() {
 int
 main(int argc, char** argv) {
 
-  // ignore sigints SIGINTs
+  // ignore SIGINTs
   struct sigaction handle_sigint;
   handle_sigint.sa_handler = SIG_IGN;
   sigemptyset(&handle_sigint.sa_mask);

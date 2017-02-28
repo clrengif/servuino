@@ -282,7 +282,6 @@ void attachInterrupt(int ir, void(*func)(), int mode)
     interrupt[ir]     = func;
 
     //interrupt[ir](); ????
-
     g_attachedPin[pin]  = S_YES;
     g_interruptType[pin] = mode;
 
@@ -292,8 +291,6 @@ void attachInterrupt(int ir, void(*func)(), int mode)
   {
     errorLog("attachInterruptERROR", ir);
   }
-
-
 }
 
 
@@ -313,8 +310,6 @@ void detachInterrupt(int ir)
     g_attachedPin[pin] = S_NO;
     digitalMode[pin]  = INPUT;
   }
-
-
 }
 //------ Interrupts ------------------------
 void interrupts()

@@ -59,41 +59,52 @@ const byte LED_PIN     = 13;
 // Esplora
 //==========================================
 int esplora::readSlider() {
-  m_pins.lock();
   increment_counter(128); // 128.2
+  m_pins.lock();
   int val = x_pinValue[SIM_SLIDER];
   m_pins.unlock();
   return val;
 }
 
 int esplora::readLightSensor() {
-//  increment_counter(128); // 128.2
-  return 0;
-
+  increment_counter(128); // 128.2
+  m_pins.lock();
+  int val = x_pinValue[SIM_LIGHT];
+  m_pins.unlock();
+  return val;
 }
 
 int esplora::readTemperature(byte scale) {
-//  increment_counter(128); // 128.2
-  return 0;
-
+  increment_counter(128); // 128.2
+  m_pins.lock();
+  int val = x_pinValue[SIM_TEMPERATURE];
+  m_pins.unlock();
+  return val;
 }
 
 int esplora::readMicrophone() {
-//  increment_counter(128); // 128.2 us
-  return 0;
+  increment_counter(128); // 128.2 us
+  m_pins.lock();
+  int val = x_pinValue[SIM_MIC];
+  m_pins.unlock();
+  return val;
 
 }
 
 int esplora::readJoystickSwitch() {
-//  increment_counter(30); // takes 30.2 us
-  return 0;
-
+  increment_counter(30); // takes 30.2 us
+  m_pins.lock();
+  int val = x_pinValue[SIM_JOYSTICK_SW];
+  m_pins.unlock();
+  return val;
 }
 
 int esplora::readJoystickButton() {
-//  increment_counter(32); // 31.9 us
-  return 0;
-
+  increment_counter(32); // 31.9 us
+  m_pins.lock();
+  int val = (x_pinValue[SIM_JOYSTICK_SW] == 1023) ? HIGH : LOW;
+  m_pins.unlock();
+  return val;
 }
 
 int esplora::readAccelerometer(byte axis) {
@@ -101,11 +112,12 @@ int esplora::readAccelerometer(byte axis) {
   int val;
   m_pins.lock();
   switch (axis) {
-    case X_AXIS: return x_pinValue[SIM_ACCEL_X];
-    case Y_AXIS: return x_pinValue[SIM_ACCEL_Y]; 
-    case Z_AXIS: return x_pinValue[SIM_ACCEL_Z];
-    default: return 0;
+    case X_AXIS: val =  x_pinValue[SIM_ACCEL_X]; break;
+    case Y_AXIS: val =  x_pinValue[SIM_ACCEL_Y]; break;
+    case Z_AXIS: val =  x_pinValue[SIM_ACCEL_Z]; break;
   }
+  m_pins.unlock();
+  return val;
 }
 
 int esplora::readButton(byte button) {
@@ -118,15 +130,19 @@ int esplora::readButton(byte button) {
 }
 
 int esplora::readJoystickX() {
-//  increment_counter(128);
-  return 0;
-
+  increment_counter(128);
+  m_pins.lock();
+  int val = x_pinValue[SIM_JOYSTICK_X];
+  m_pins.unlock();
+  return val;
 }
 
 int esplora::readJoystickY() {
-//  increment_counter(128);
-  return 0;
-
+  increment_counter(128);
+  m_pins.lock();
+  int val = x_pinValue[SIM_JOYSTICK_Y];
+  m_pins.unlock();
+  return val;
 }
 
 void esplora::writeRGB(byte red, byte green, byte blue) {

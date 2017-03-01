@@ -22,7 +22,6 @@
 #include <fstream>
 #include <math.h>
 #include <sys/inotify.h>
-using namespace std;
 #include "common.h"
 #include <mutex>
 #include "global_variables.h"
@@ -32,7 +31,6 @@ using namespace std;
 int x_pinValue[MAX_TOTAL_PINS];
 int x_leds[25] = {0};
 int x_pinMode[MAX_TOTAL_PINS];
-int x_pinScenario[MAX_TOTAL_PINS][SCEN_MAX];
 int x_pinDigValue[MAX_TOTAL_PINS];
 int x_pinAnaValue[MAX_TOTAL_PINS];
 int x_pinRW[MAX_TOTAL_PINS];
@@ -57,49 +55,14 @@ mutex elapsed;
 //===================================
 
 
-char  sketch[120], g_temp[120];
-int   g_simulationLength = 111;
-char  g_version[40];
-
-
-
-void  stepCommand();
-
-int   row, col;
-int   graph_x = 10, graph_y = 10;
-
-char  appName[120];
-
-
 int   anaPinPos[MAX_PIN_ANALOG_MEGA];
 int   c_analogPin[MAX_PIN_ANALOG_MEGA];
-int   s_analogPin[SCEN_MAX][MAX_PIN_ANALOG_MEGA];
-int   s_analogStep[SCEN_MAX][MAX_PIN_ANALOG_MEGA];
 
 int   digPinPos[MAX_PIN_DIGITAL_MEGA];
 int   c_digitalPin[MAX_PIN_DIGITAL_MEGA];
-int   s_digitalPin[SCEN_MAX][MAX_PIN_DIGITAL_MEGA];
-int   s_digitalStep[SCEN_MAX][MAX_PIN_DIGITAL_MEGA];
 int   digitalMode[MAX_PIN_DIGITAL_MEGA];
 
-int   s_interrupt[SCEN_MAX][MAX_PIN_IR_MEGA];
-int   s_interruptStep[SCEN_MAX];
 int   interruptMode[MAX_PIN_IR_MEGA];
-
-char  textPinModeIn[MAX_PIN_DIGITAL_MEGA][SIZE_ROW];
-char  textPinModeOut[MAX_PIN_DIGITAL_MEGA][SIZE_ROW];
-char  textDigitalWriteLow[MAX_PIN_DIGITAL_MEGA][SIZE_ROW];
-char  textDigitalWriteHigh[MAX_PIN_DIGITAL_MEGA][SIZE_ROW];
-char  textAnalogWrite[MAX_PIN_DIGITAL_MEGA][SIZE_ROW];
-char  textAnalogRead[MAX_PIN_ANALOG_MEGA][SIZE_ROW];
-char  textDigitalRead[MAX_PIN_DIGITAL_MEGA][SIZE_ROW];
-
-int   stepAtReadD[MAX_READ];
-int   stepAtReadA[MAX_READ];
-int   valueAtReadD[MAX_READ];
-int   valueAtReadA[MAX_READ];
-int   pinAtReadD[MAX_READ];
-int   pinAtReadA[MAX_READ];
 
 int   paceMaker = 0;
 int   baud = 0;
@@ -111,7 +74,6 @@ int   scenAnalog    = 0;
 int   scenDigital   = 0;
 int   scenInterrupt = 0;
 
-int   conn;
 
 int   confLogLev  =   0;
 
@@ -131,14 +93,6 @@ int g_row_setup = 0;
 int g_row_loop = 0;
 
 
-int nCodeString = 0;
-int default_sim_length = 50;
-
-
-FILE *s_log, *e_log, *c_log, *a_log, *u_log, *x_log, *t_log, *r_log;
-FILE *f_event, *f_cust, *f_serial, *f_time, *f_ino;
-FILE *f_pinmod, *f_digval, *f_anaval, *f_pinrw;
-
 
 #include "arduino.h"
 #include "code.h"
@@ -152,15 +106,6 @@ FILE *f_pinmod, *f_digval, *f_anaval, *f_pinrw;
 
 atomic<bool> running(true);
 
-// void setup();
-// void loop();
-
-// Pause on a condition variable and wait for a resume
-// to get woken up
-void
-check_pause() {
-
-}
 
 void
 check_suspend() {
@@ -187,33 +132,22 @@ increment_counter(int us)
   elapsed.lock();
   micros_elapsed += us;
   elapsed.unlock();
-  check_pause();
   check_suspend();
   check_shutdown();
 }
 
-//====================================
-void runEncoding(int n)
-//====================================
+void run_code()
 {
-  int i;
-
-
-  g_curStep = 0;
   setup();
   increment_counter(1032);
-
   while (running) {
     g_curLoop++;
     loop();
-    cout << "code running." << endl;
   }
 }
 
 
-//=======================R=============
 int run_servuino()
-//====================================
 {
   int x, i;
 
@@ -222,9 +156,8 @@ int run_servuino()
 
   //boardInit();
   //readCustom(); // Get customized log text from sketch
-  g_simulationLength = default_sim_length;
   g_scenSource = 0;
-  runEncoding(g_simulationLength);
+  run_code();
   return EXIT_SUCCESS;
 }
 

@@ -3,32 +3,13 @@
 
 #include "esplora_pins.h"
 
-const byte SIM_SWITCH_1    = 1;
-const byte SIM_SWITCH_2    = 2;
-const byte SIM_SWITCH_3    = 3;
-const byte SIM_SWITCH_4    = 4;
-const byte SIM_SLIDER      = 7;
-const byte SIM_LIGHT       = 8;
-const byte SIM_TEMPERATURE = 11;
-const byte SIM_MIC         = 12;
-const byte SIM_TINKERKIT_A = 13;
-const byte SIM_TINKERKIT_B = 14;
-const byte SIM_JOYSTICK_SW = 15;
-const byte SIM_JOYSTICK_X  = 16;
-const byte SIM_JOYSTICK_Y  = 17;
-const byte SIM_RED         = 5;
-const byte SIM_GREEN       = 9;
-const byte SIM_BLUE        = 10;
-const byte SIM_ACCEL_X     = 23;
-const byte SIM_ACCEL_Y     = 29;
-const byte SIM_ACCEL_Z     = 24;
-const byte SIM_BUZZER      = 6;
-
-
 /*
  * The following constants can be used with the readButton()
  * method.
  */
+
+
+
 
 const byte SWITCH_1       = 1;
 const byte SWITCH_2       = 2;

@@ -108,13 +108,24 @@ unsigned long pulseIn(int pin, int value, unsigned long timeout)
 unsigned long millis()
 {
 //  increment_counter(1);
-  return (g_curStep * 100);
+  elapsed.lock();
+  unsigned long e = micros_elapsed;
+  elapsed.unlock();
+  return (int)e/1000;
 }
 
-unsigned long micros()
+// Return microseconds rounded down
+// to the nearest multiple of 4
+unsigned long 
+micros()
 {
-//  increment_counter(1);
-  return (g_curStep * 100000);
+  elapsed.lock();
+  unsigned long e = micros_elapsed;
+  elapsed.unlock();
+  int rem = e%4;
+  if (rem == 0) 
+    return e;
+  return e-rem;
 }
 
 void delay(uint32_t ms)
@@ -131,37 +142,15 @@ void delayMicroseconds(uint32_t us)
   increment_counter(us);
 }
 
-//------ Math ------------------------------
-void test_math()
-{
-  double r, x, z;
-  int y;
-  y = min(1, 2);
-  y = max(1, 2);
-  y = abs(1);
-  r = pow(x, z);
-  r = sqrt(y);
-}
-
-
 int map(int x, int fromLow, int fromHigh, int toLow, int toHigh)
 {
 //  increment_counter(100);
   int y;
   y = (float)(x - fromLow) / (fromHigh - fromLow) * (toHigh - toLow) + toLow;
-  //printf("%d %d\n",x,y);
   return (y);
 }
 
 
-//------ Trigonometry ----------------------
-void test_trigonometry()
-{
-  double x;
-  x = sin(1);
-  x = cos(1);
-  x = tan(1);
-}
 //------ Random Numbers --------------------
 void randomSeed(int seed)
 {

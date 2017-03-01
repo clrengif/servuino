@@ -210,7 +210,6 @@ class keyboard {
 
 public:
   void begin();
-  void click(uint_8t b = MOUSE_LEFT);
   void end();
   size_t write(uint_8t k);
   size_t press(uint_8t k);

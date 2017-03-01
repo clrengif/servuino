@@ -21,6 +21,7 @@
 using namespace std;
 #include "servuino.cpp"
 #include "global_variables.h"
+#include "Hardware.h"
 
 
 extern "C" {
@@ -50,10 +51,9 @@ min(int a, int b)
   return (a < b ? a : b);
 }
 
-// timing --
-// TODO: Actually handle timing.
+// Elapsed time of the arduino in microseconds
 uint64_t
-get_macro_ticks() {
+get_elapsed_micros() {
   elapsed.lock();
   uint64_t e = micros_elapsed;
   elapsed.unlock();
@@ -61,9 +61,11 @@ get_macro_ticks() {
 }
 
 // Write to the output pipe
+// Add a 5 us delay to stop data corruption from spamming the command line gui
 void
 write_to_updates(const void* buf, size_t count, bool should_suspend = false) {
   write(updates_fd, buf, count);
+  this_thread::sleep_for(chrono::microseconds(5));
 }
 
 
@@ -111,7 +113,7 @@ void send_pin_update() {
     char* json_ptr = json;
     char* json_end = json + sizeof(json);
     appendf(&json_ptr, json_end, "[{ \"type\": \"microbit_pins\", \"ticks\": %d, \"data\": {",
-            get_macro_ticks());
+            get_elapsed_micros());
 
     list_to_json("p", &json_ptr, json_end, pins, sizeof(pins) / sizeof(int));
 
@@ -142,7 +144,7 @@ send_led_update() {
     char* json_ptr = json;
     char* json_end = json + sizeof(json);
     appendf(&json_ptr, json_end, "[{ \"type\": \"microbit_leds\", \"ticks\": %d, \"data\": {",
-            get_macro_ticks());
+            get_elapsed_micros());
 
     list_to_json("b", &json_ptr, json_end, x_leds, sizeof(x_leds) / sizeof(int));
 
@@ -163,7 +165,7 @@ write_event_ack(const char* event_type, const char* ack_data_json) {
   appendf(&json_ptr, json_end,
           "[{ \"type\": \"microbit_ack\", \"ticks\": %d, \"data\": { \"type\": \"%s\", \"data\": "
           "%s }}]\n",
-          get_macro_ticks(), event_type, ack_data_json ? ack_data_json : "{}");
+          get_elapsed_micros(), event_type, ack_data_json ? ack_data_json : "{}");
 
   write_to_updates(json, json_ptr - json, false);
 }
@@ -192,7 +194,7 @@ void
 process_client_temperature(const json_value* data) {
   const json_value* t = json_value_get(data, "t");
   if (!t || t->type != JSON_VALUE_TYPE_NUMBER) {
-    fprintf(stderr, "Slider event missing t\n");
+    fprintf(stderr, "Temperature event missing t\n");
     return;
   }
   m_pins.lock();
@@ -586,5 +588,6 @@ main(int argc, char** argv) {
   code_thread.detach();
   main_thread();                    // start reading client data
   close(updates_fd);
+  cout << "shutdown cleanly, bye!!!!" << endl;
   return EXIT_SUCCESS;
 }

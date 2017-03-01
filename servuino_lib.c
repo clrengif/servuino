@@ -37,7 +37,7 @@ void interruptPinValues()
   {
     if (g_attachedPin[i] == S_YES)
     {
-      x_pinDigValue[i] = x_pinScenario[i][g_curStep];
+      // x_pinDigValue[i] = x_pinScenario[i][g_curStep];
       x_pinMode[i]     = g_interruptType[i];
       g_doInterrupt    = S_YES;
     }
@@ -206,146 +206,7 @@ void updateFromRegister()
 }
 
 
-//====================================
-void boardInit()
-//====================================
-{
-  int i, j;
 
-  g_nloop = 0;
-
-  for (i = 0; i < 40; i++)
-  {
-    for (j = 0; j < MAX_TOTAL_PINS; j++)
-    {
-      strcpy(g_custText[i][j], "no-text");
-    }
-  }
-
-  for (i = 0; i < MAX_READ; i++)
-  {
-    stepAtReadA[i]  = 0;
-    stepAtReadD[i]  = 0;
-    valueAtReadA[i] = 0;
-    valueAtReadD[i] = 0;
-    pinAtReadA[i]   = 0;
-    pinAtReadD[i]   = 0;
-  }
-
-  for (i = 0; i <= max_anaPin; i++)
-  {
-    anaPinPos[i]   = 0;
-    c_analogPin[i] = 0;
-    //strcpy(textAnalogRead[i],"void");
-  }
-
-  for (i = 0; i <= max_digPin; i++)
-  {
-    digitalMode[i]  = FREE;
-    digPinPos[i]    = 0;
-    c_digitalPin[i] = 0;
-    //strcpy(textPinModeIn[i],"void");
-    //strcpy(textPinModeOut[i],"void");
-
-    //strcpy(textDigitalWriteLow[i],"void");
-    //strcpy(textDigitalWriteHigh[i],"void");
-
-    //strcpy(textAnalogWrite[i],"void");
-    //strcpy(textDigitalRead[i],"void");
-  }
-
-  for (i = 0; i < max_irPin; i++)
-  {
-    interruptMode[i] = 0;
-  }
-
-  strcpy(interruptType[LOW], "interruptLOW");
-  strcpy(interruptType[FALLING], "interruptFALLING");
-  strcpy(interruptType[RISING], "interruptRISING");
-  strcpy(interruptType[CHANGE], "interruptCHANGE");
-
-  /* // Values 0 to 255    */
-  /* // PWM: only pin 3,5,6,9,10,11  UNO */
-  /* // PWM: only pin 2 - 13 MEGA */
-}
-
-
-
-//====================================
-int checkScenario(int now, int anadig, int pin, int step)
-//====================================
-{
-  int k;
-  int hit = 0, send;
-
-  if (anadig == DIG)
-  {
-    send = s_digitalStep[0][pin];
-    for (k = now + 1; k <= send; k++)
-    {
-      if (step == s_digitalStep[k][pin])hit++;
-    }
-  }
-
-  if (anadig == ANA)
-  {
-    send = s_analogStep[0][pin];
-    for (k = now + 1; k <= send; k++)
-    {
-      if (step == s_digitalStep[k][pin])hit++;
-    }
-  }
-  return (hit);
-}
-
-//====================================
-void saveScenario() // Servuino input/output
-//====================================
-{
-  int i, j, k, step, ok = 0;
-  FILE *out;
-
-  out = fopen("data.scen", "w");
-  if (out == NULL)
-  {
-    errorLog("Unable to open data.scen", 0);
-  }
-
-  for (i = 0; i <= max_digPin; i++)
-  {
-    for (k = 1; k <= s_digitalStep[0][i]; k++)
-    {
-      step = s_digitalStep[k][i];
-      ok = checkScenario(k, DIG, i, step);
-      if (ok == 0)
-        fprintf(out, "// SCENDIGPIN %d %d %d\n", i, s_digitalStep[k][i], s_digitalPin[k][i]);
-    }
-  }
-
-  for (i = 0; i <= max_anaPin; i++)
-  {
-    for (k = 1; k <= s_analogStep[0][i]; k++)
-    {
-      step = s_analogStep[k][i];
-      ok = checkScenario(k, ANA, i, step);
-      if (ok == 0)
-        fprintf(out, "// SCENANAPIN %d %d %d\n", i, s_analogStep[k][i], s_analogPin[k][i]);
-    }
-  }
-
-  fclose(out);
-  return;
-}
-
-
-
-
-
-
-
-
-
-//====================================
 void doInterrupt(int pin, int ir, int irType, int value)
 //====================================
 {

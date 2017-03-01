@@ -18,6 +18,7 @@
 */
 
 #include "Esplora.h"
+#include "Hardware.h"
 #include "global_variables.h"
 
 /*

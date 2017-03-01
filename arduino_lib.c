@@ -119,17 +119,16 @@ unsigned long micros()
 
 void delay(uint32_t ms)
 {
-  increment_counter(ms * 1000);
   if (!fast_mode)
     this_thread::sleep_for(chrono::milliseconds(ms));
+  increment_counter(ms * 1000);
 }
 
 void delayMicroseconds(uint32_t us)
 {
-  increment_counter(us);
   if (!fast_mode)
     this_thread::sleep_for(chrono::microseconds(us));
-
+  increment_counter(us);
 }
 
 //------ Math ------------------------------
@@ -261,7 +260,7 @@ void attachInterrupt(int ir, void(*func)(), int mode)
 //  increment_counter(100);
   int pin, ok = S_NOK;
 
-  ok = checkRange(S_OK, "interrupt", ir);
+  // ok = checkRange(S_OK, "interrupt", ir);
 
   if (ok == S_OK)
   {
@@ -301,7 +300,7 @@ void detachInterrupt(int ir)
   int ok = S_NOK, pin;
 
 
-  ok = checkRange(S_OK, "interrupt", ir);
+  // ok = checkRange(S_OK, "interrupt", ir);
   if (ok == S_OK)
   {
     //interrupt[ir]     = NULL;
@@ -366,12 +365,21 @@ void serial::print(int x)
 
 }
 
-void print_binary(int number)
+void print_binary(size_t const size, void const * const ptr)
 {
-  if (number) {
-    print_binary(number >> 1);
-    putc((number & 1) ? '1' : '0', stdout);
-  }
+    unsigned char *b = (unsigned char*) ptr;
+    unsigned char byte;
+    int i, j;
+
+    for (i=size-1;i>=0;i--)
+    {
+        for (j=7;j>=0;j--)
+        {
+            byte = (b[i] >> j) & 1;
+            printf("%u", byte);
+        }
+    }
+    puts("");
 }
 
 void serial::print(int x, int base)
@@ -380,7 +388,7 @@ void serial::print(int x, int base)
   char buf[20];
   switch (base) {
   case BIN:
-    print_binary(x);
+    print_binary(sizeof(x), &x);
     break;
   case OCT:
     sprintf(buf, "%o", x);

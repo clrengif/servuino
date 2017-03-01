@@ -11,6 +11,7 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
+#include <atomic>
 #include <future>
 #include <chrono>
 #include <cstdarg>
@@ -29,26 +30,18 @@ extern "C" {
 
 mutex m_pins;
 mutex m_leds;
+
 mutex m_suspend;
-mutex m_screen;
-mutex m_code;
-condition_variable suspend_cv;
+condition_variable cv_suspend;
 
 // tells the code thread to shutdown, suspend or operate in fast_mode
-volatile bool shutdown = false;
-bool suspend = false;
+atomic<bool> shutdown(false);
+atomic<bool> suspend(false);
 bool fast_mode = false;
 
 // File descriptor to write ___device_updates.
 int updates_fd = -1;
 
-
-void msg(char const * const message)
-{
-  m_screen.lock();
-  cout << message << endl;
-  m_screen.unlock();
-}
 
 // to get appendf to work
 inline int
@@ -70,11 +63,6 @@ get_macro_ticks() {
 // Write to the output pipe
 void
 write_to_updates(const void* buf, size_t count, bool should_suspend = false) {
-  if (should_suspend && fast_mode) {
-    m_suspend.lock();
-    suspend = true;
-    m_suspend.unlock();
-  }
   write(updates_fd, buf, count);
 }
 
@@ -360,10 +348,12 @@ process_client_json(const json_value* json) {
       fprintf(stderr, "Event missing type and/or data.\n");
     } else {
       if (strncmp(event_type->as.string, "resume", 6) == 0) {
-        m_suspend.lock();
+        unique_lock<mutex> lk(m_suspend);
         suspend = false;
-        suspend_cv.notify_all();
-        m_suspend.unlock();
+        cv_suspend.notify_all();
+      } else if (strncmp(event_type->as.string, "suspend", 7) == 0) {
+        unique_lock<mutex> lk(m_suspend);
+        suspend = true;
       } else if (strncmp(event_type->as.string, "microbit_button", 15) == 0) {
         // Button state change.
         process_client_button(event_data);
@@ -399,7 +389,7 @@ process_client_json(const json_value* json) {
       }
       char msg_text[120];
       sprintf(msg_text, "event type: %s", event_type->as.string);
-      msg(msg_text);
+      cout << msg_text << endl;
     }
     event = event->next;
   }
@@ -471,8 +461,9 @@ setup_output_pipe() {
 
 void
 sig_handler(int s) {
-  cout << "Caught signal " << s << endl;
-  exit(1);
+  cout << "\nCaught signal " << s << endl;
+  shutdown = true;
+  running = false;
 }
 
 void
@@ -592,6 +583,7 @@ main(int argc, char** argv) {
   setup_output_pipe();
   set_esplora_state();
   thread code_thread(code_thread_main);  // run the code
+  code_thread.detach();
   main_thread();                    // start reading client data
   close(updates_fd);
   return EXIT_SUCCESS;

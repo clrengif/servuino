@@ -71,8 +71,6 @@ int   graph_x = 10, graph_y = 10;
 char  appName[120];
 
 
-
-
 int   anaPinPos[MAX_PIN_ANALOG_MEGA];
 int   c_analogPin[MAX_PIN_ANALOG_MEGA];
 int   s_analogPin[SCEN_MAX][MAX_PIN_ANALOG_MEGA];
@@ -152,10 +150,47 @@ FILE *f_pinmod, *f_digval, *f_anaval, *f_pinrw;
 
 #include "sketch/sketch.ino"
 
-bool running = true;
+atomic<bool> running(true);
 
 // void setup();
 // void loop();
+
+// Pause on a condition variable and wait for a resume
+// to get woken up
+void
+check_pause() {
+
+}
+
+void
+check_suspend() {
+  unique_lock<mutex> lk(m_suspend);
+  cv_suspend.wait(lk, []{return suspend == false;});
+}
+
+// Shutdown if we receive a shutdown signal
+void
+check_shutdown() {
+  bool stop = false;
+  if (shutdown)
+    stop = true;
+  if (stop) {
+    send_pin_update();
+    send_led_update();
+    //terminate();
+  }
+}
+
+void
+increment_counter(int us)
+{
+  elapsed.lock();
+  micros_elapsed += us;
+  elapsed.unlock();
+  check_pause();
+  check_suspend();
+  check_shutdown();
+}
 
 //====================================
 void runEncoding(int n)
@@ -168,9 +203,10 @@ void runEncoding(int n)
   setup();
   increment_counter(1032);
 
-  while(running) {
+  while (running) {
     g_curLoop++;
     loop();
+    cout << "code running." << endl;
   }
 }
 
@@ -181,16 +217,14 @@ int run_servuino()
 {
   int x, i;
 
-
-  g_nTotPins = setRange(g_boardType);
   if (g_boardType == UNO)g_nDigPins = MAX_PIN_DIGITAL_UNO;
   if (g_boardType == MEGA)g_nDigPins = MAX_PIN_DIGITAL_MEGA;
 
   //boardInit();
   //readCustom(); // Get customized log text from sketch
-    g_simulationLength = default_sim_length;
-    g_scenSource = 0;
-    runEncoding(g_simulationLength);
+  g_simulationLength = default_sim_length;
+  g_scenSource = 0;
+  runEncoding(g_simulationLength);
   return EXIT_SUCCESS;
 }
 

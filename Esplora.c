@@ -77,9 +77,16 @@ int esplora::readLightSensor() {
 int esplora::readTemperature(byte scale) {
   increment_counter(128); // 128.2
   m_pins.lock();
-  int val = x_pinValue[SIM_TEMPERATURE];
+  int raw = x_pinValue[SIM_TEMPERATURE];
   m_pins.unlock();
-  return val;
+  switch (scale) {
+    case DEGREES_C: 
+      return (int)((raw*500/1024)-50);
+    case DEGREES_F: 
+      return (int)((raw*450/512)-58);
+    default:
+      return (int)((raw*500/1024)-50);
+  }
 }
 
 int esplora::readMicrophone() {
